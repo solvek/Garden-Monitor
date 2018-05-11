@@ -10,10 +10,10 @@
 
 #include <SPI.h>
 #include <DMD2.h>
-#include "fonts/Arial14.h"
+#include "fonts/GMSolvek.h"
 
 //Constants
-#define DELAY_TIME 8*1000
+#define DELAY_TIME 10*1000
 #define DELAY_DATE 3*1000
 #define DELAY_TEMP 3*1000
 
@@ -41,7 +41,7 @@ void setup()
 
   // DMD init
   dmd.setBrightness(255);
-  dmd.selectFont(Arial14);
+  dmd.selectFont(GMSolvek);
   dmd.begin();
 }
 
@@ -53,7 +53,7 @@ void loop()
 //    String t = "28:88";
 //    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(0,1,t);
+    dmd.drawString(1,3,t);
     delay(DELAY_TIME);
 
     readCommand();
@@ -61,19 +61,20 @@ void loop()
     t = padZero(now.day())+F(".")+padZero(now.month());
 //    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(0,1,t);
+    dmd.drawString(1,3,t);
     delay(DELAY_DATE);
 
     readCommand();
   
     //Read data and store it to variables hum and temp
-    hum = dht.readHumidity();
+//    hum = dht.readHumidity();
     temp= dht.readTemperature();
     //Print temp and humidity values to serial monitor
-    t = String(temp)+(char)186+hum+F("%");
+//    t = String(temp)+F("&")+hum+F("%");
+    t = String(temp)+F("&");
 //    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(0,1,t);    
+    dmd.drawString(6,3,t);    
     delay(DELAY_TEMP);
 
 //    Serial.println();
