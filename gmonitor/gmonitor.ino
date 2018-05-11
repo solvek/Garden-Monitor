@@ -69,12 +69,16 @@ void loop()
     readCommand();
   
     //Read data and store it to variables hum and temp
-//    hum = dht.readHumidity();
+    hum = dht.readHumidity();
     temp= dht.readTemperature();
+//    temp = 44;
     //Print temp and humidity values to serial monitor
 //    t = String(temp)+F("&")+hum+F("%");
     dmd.clearScreen();
-    dmd.drawString(6,3,String(temp)+F("&"));    
+    String t = String();
+    if (temp>0) t += String(F("+"));
+    t +=String(temp)+F("&");
+    dmd.drawString(((temp>-10) && (temp<10)) ? 10 : 4,3,t); 
     delay(DELAY_TEMP*1000);
 
 //    Serial.println();
