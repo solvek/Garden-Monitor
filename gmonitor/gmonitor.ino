@@ -14,7 +14,7 @@
 
 //Constants
 #define DELAY_TIME 12
-#define DELAY_DATE 3
+#define DELAY_DATE 4
 #define DELAY_TEMP 4
 
 
@@ -64,7 +64,7 @@ void loop()
 
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
-    int dow = 34*(Clock.getDoW()-1)/7;
+    int dow = 33*(Clock.getDoW()-1)/7;
     dmd.drawLine(dow,0,dow+3,0);
     dmd.drawLine(dow,15,dow+3,15);    
 //    Serial.println(dow);
