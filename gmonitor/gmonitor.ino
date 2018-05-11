@@ -64,9 +64,11 @@ void loop()
 
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
-    int dow = Clock.getDoW();
-    Serial.println(dow);
-    Serial.println(now.year());
+    int dow = 34*(Clock.getDoW()-1)/7;
+    dmd.drawLine(dow,0,dow+3,0);
+    dmd.drawLine(dow,15,dow+3,15);    
+//    Serial.println(dow);
+//    Serial.println(now.year());
     delay(DELAY_DATE*1000);
 
     readCommand();
@@ -80,8 +82,8 @@ void loop()
     if (temp>0) t += String(F("+"));
     t +=String(temp)+F("&");
     dmd.drawString(((temp>-10) && (temp<10)) ? 10 : 4,3,t);
-    dmd.drawLine(0,0,hum,0);
-    dmd.drawLine(0,15,hum,15);
+    dmd.drawLine(0,0,hum-1,0);
+    dmd.drawLine(0,15,hum-1,15);
     
     delay(DELAY_TEMP*1000);
 
