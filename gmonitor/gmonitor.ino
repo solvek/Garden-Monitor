@@ -1,6 +1,6 @@
 /* 
- *  To set datetime execute command "#TYYMMDDHHmmSS"
- *  For example "#T1804261107"
+ *  To set datetime execute command "#TYYMMDDDwHHmmSS"
+ *  For example "#T180511051453"
 */
 
 //Libraries
@@ -64,6 +64,9 @@ void loop()
 
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
+    int dow = Clock.getDoW();
+    Serial.println(dow);
+    Serial.println(now.year());
     delay(DELAY_DATE*1000);
 
     readCommand();
@@ -115,6 +118,7 @@ void commandSetTime(){
   Clock.setYear(readNumeral(2));
   Clock.setMonth(readNumeral(2));
   Clock.setDate(readNumeral(2));
+  Clock.setDoW(readNumeral(2));
   Clock.setHour(readNumeral(2));
   Clock.setMinute(readNumeral(2));
   Clock.setSecond(readNumeral(2));
