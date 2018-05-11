@@ -13,9 +13,9 @@
 #include "fonts/GMSolvek.h"
 
 //Constants
-#define DELAY_TIME 10*1000
-#define DELAY_DATE 3*1000
-#define DELAY_TEMP 3*1000
+#define DELAY_TIME 12
+#define DELAY_DATE 3
+#define DELAY_TEMP 4
 
 
 #define DHTPIN 2     // what pin we're connected to
@@ -49,20 +49,22 @@ void loop()
 {
     DateTime now = RTC.now();
 
-    String t = padZero(now.hour())+F(":")+padZero(now.minute());
-//    String t = "28:88";
-//    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(1,3,t);
-    delay(DELAY_TIME);
+    dmd.drawString(1,3,padZero(now.hour()));
+    dmd.drawString(18,3,padZero(now.minute()));
+    for(int i=0;i<DELAY_TIME;i++){
+      dmd.drawBox(15,5,16,6);
+      dmd.drawBox(15,9,16,10);
+      delay(500);
+      dmd.drawBox(15,5,16,10, GRAPHICS_OFF);
+      delay(500);
+    }    
 
     readCommand();
 
-    t = padZero(now.day())+F(".")+padZero(now.month());
-//    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(1,3,t);
-    delay(DELAY_DATE);
+    dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
+    delay(DELAY_DATE*1000);
 
     readCommand();
   
@@ -71,11 +73,9 @@ void loop()
     temp= dht.readTemperature();
     //Print temp and humidity values to serial monitor
 //    t = String(temp)+F("&")+hum+F("%");
-    t = String(temp)+F("&");
-//    Serial.println(t);
     dmd.clearScreen();
-    dmd.drawString(6,3,t);    
-    delay(DELAY_TEMP);
+    dmd.drawString(6,3,String(temp)+F("&"));    
+    delay(DELAY_TEMP*1000);
 
 //    Serial.println();
 
