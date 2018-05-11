@@ -8,6 +8,10 @@
 #include <Wire.h>
 #include "DS3231.h"
 
+#include <SPI.h>
+#include <DMD2.h>
+#include "fonts/Arial14.h"
+
 //Constants
 #define DELAY_TIME 8*1000
 #define DELAY_DATE 3*1000
@@ -20,6 +24,8 @@ DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 RTClib RTC;
 DS3231 Clock;
 
+SoftDMD dmd(1,1);
+
 //Variables
 int chk;
 int hum;  //Stores humidity value
@@ -28,24 +34,34 @@ int temp; //Stores temperature value
 void setup()
 {
   Serial.begin(9600);
+  
+  // DHT init
   dht.begin();
   Wire.begin();
+
+  // DMD init
+  dmd.setBrightness(255);
+  dmd.selectFont(Arial14);
+  dmd.begin();
 }
 
 void loop()
 {
     DateTime now = RTC.now();
-    
-    Serial.print(padZero(now.hour()));
-    Serial.print(":");
-    Serial.println(padZero(now.minute()));
+
+    String t = padZero(now.hour())+F(":")+padZero(now.minute());
+//    String t = "28:88";
+//    Serial.println(t);
+    dmd.clearScreen();
+    dmd.drawString(0,1,t);
     delay(DELAY_TIME);
 
     readCommand();
 
-    Serial.print(padZero(now.day()));
-    Serial.print(".");
-    Serial.println(padZero(now.month()));
+    t = padZero(now.day())+F(".")+padZero(now.month());
+//    Serial.println(t);
+    dmd.clearScreen();
+    dmd.drawString(0,1,t);
     delay(DELAY_DATE);
 
     readCommand();
@@ -54,35 +70,35 @@ void loop()
     hum = dht.readHumidity();
     temp= dht.readTemperature();
     //Print temp and humidity values to serial monitor
-    Serial.print(temp);
-    Serial.print("º ");
-    Serial.print(hum);
-    Serial.println("%");
+    t = String(temp)+(char)186+hum+F("%");
+//    Serial.println(t);
+    dmd.clearScreen();
+    dmd.drawString(0,1,t);    
     delay(DELAY_TEMP);
 
-    Serial.println();
+//    Serial.println();
 
     readCommand();
 }
 
 void readCommand(){
-//  Serial.println("Checking command");
+//  Serial.println(F("Checking command"));
   int r;
   do{   
     r = Serial.read();
     if (r == -1) return;
-//    Serial.print("Read symbol: ");
+//    Serial.print(F("Read symbol: "));
 //    Serial.println(r);
   }while(r != 35); // # char
 
-//  Serial.println("Expecting command");
+//  Serial.println(F("Expecting command"));
   r = inputSymbol();
   
   if (r == 84 || r == 116){
     commandSetTime();
   }
   else {
-    Serial.print("Unknown command: ");
+    Serial.print(F("Unknown command: "));
     Serial.println(r);
   }
 }
