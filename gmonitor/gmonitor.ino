@@ -17,9 +17,6 @@
 #define DELAY_DATE 4
 #define DELAY_TEMP 4
 
-const int DAYS_TOP[7] = {0, 0, 1, 1, 1, 2, 2};
-const int DAYS_BOTTOM[7] = {0, 2, 0, 1, 2, 0, 2};
-
 
 #define DHTPIN 2     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
@@ -67,10 +64,11 @@ void loop()
 
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
-    int dow = Clock.getDoW()-1, top = 11*DAYS_TOP[dow], bottom=11*DAYS_BOTTOM[dow];
-//    dmd.drawString(3, 8, DAYS[dow]);
-    dmd.drawLine(top,0,top+11,0);
-    dmd.drawLine(bottom,15,bottom+11,15);    
+    int dow = 33*(Clock.getDoW()-1)/7;
+    dmd.drawLine(dow,0,dow+3,0);
+    dmd.drawLine(dow,15,dow+3,15);    
+//    Serial.println(dow);
+//    Serial.println(now.year());
     delay(DELAY_DATE*1000);
 
     readCommand();
