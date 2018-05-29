@@ -4,7 +4,7 @@ A useful monitor for garden displaying information on dot-matrix
 ![enter image description here](images/dmd.jpg)
 
 # Hardware
-![enter image description here](image/wiring.png)
+![enter image description here](images/wiring.png)
 ## [RTC](https://www.makeuseof.com/tag/how-and-why-to-add-a-real-time-clock-to-arduino/)
 ## P10 Dot-Matrix display
  * [DMD2 Library](https://github.com/freetronics/DMD2)
