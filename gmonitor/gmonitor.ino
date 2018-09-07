@@ -3,6 +3,8 @@
  *  For example "#T180511051453"
 */
 
+#define ESP8266
+
 //Libraries
 #include <DHT.h>;
 #include <Wire.h>
@@ -24,7 +26,18 @@ DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 RTClib RTC;
 DS3231 Clock;
 
-SoftDMD dmd(1,1);
+#define panel_width 1
+#define panel_heigh 1
+
+#ifdef ESP8266
+//#define pin_A 16
+//#define pin_B 12
+//#define pin_sclk 0
+//#define pin_noe 15
+SPIDMD dmd(panel_width, panel_heigh/*, pin_noe, pin_A, pin_B, pin_sclk*/);  // DMD controls the entire display
+#else
+SoftDMD dmd(panel_width,panel_heigh);
+#endif
 
 //Variables
 int chk;
