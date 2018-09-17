@@ -30,11 +30,20 @@ DS3231 Clock;
 #define panel_heigh 1
 
 #ifdef ESP8266
+#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
+
+#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
+#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
+//#include "fonts/SystemFont5x7.h"
+
 //#define pin_A 16
 //#define pin_B 12
 //#define pin_sclk 0
 //#define pin_noe 15
 SPIDMD dmd(panel_width, panel_heigh/*, pin_noe, pin_A, pin_B, pin_sclk*/);  // DMD controls the entire display
+
 #else
 SoftDMD dmd(panel_width,panel_heigh);
 #endif
@@ -47,15 +56,37 @@ int temp; //Stores temperature value
 void setup()
 {
   Serial.begin(9600);
+
+  #ifdef ESP8266
+//  dmd.selectFont(SystemFont5x7);
+  Serial.println("Writing hello world");
+  dmd.drawString(5, 3, F("Conn"));
+  Serial.println("Printed");
   
-  // DHT init
-  dht.begin();
-  Wire.begin();
+  String apName = String("GM")+ESP.getChipId();  
+//  Serial.print("AP Name:");
+//  Serial.println(apName);
+//  Serial.print("Chip id:");
+//  Serial.println(ESP.getChipId());
+
+//  dmd.end();
+  WiFiManager wifiManager;
+  int len = apName.length();
+  char chars[len];
+  apName.toCharArray(chars, len);
+  wifiManager.autoConnect(chars);
+
+//  dmd.begin();
+  #endif  
 
   // DMD init
   dmd.setBrightness(255);
   dmd.selectFont(GMSolvek);
   dmd.begin();
+  
+  // DHT init
+  dht.begin();
+  Wire.begin();  
 }
 
 void loop()
