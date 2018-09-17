@@ -74,6 +74,7 @@ void setup()
   int len = apName.length();
   char chars[len];
   apName.toCharArray(chars, len);
+  wifiManager.setConfigPortalTimeout(600);
   wifiManager.autoConnect(chars);
 
 //  dmd.begin();
