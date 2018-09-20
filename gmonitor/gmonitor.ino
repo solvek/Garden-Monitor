@@ -55,7 +55,7 @@ SoftDMD dmd(panel_width,panel_heigh);
 int chk;
 int hum;
 float temp, tmpCorrection=0;
-float g=0.7;
+float g=0.4;
 
 bool network = false;
 

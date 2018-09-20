@@ -14,7 +14,7 @@
 #define PERIOD_UPDATE_TIME 24*60*60*1000
 
 // Period for requesting weather conditions (milliseconds)
-#define PERIOD_REQUEST_WEATHER 1*60*60*1000
+#define PERIOD_REQUEST_WEATHER 30*60*1000
 
 // Accuweather APIKey
 #define API_KEY "PUT YOU VALUE!"
