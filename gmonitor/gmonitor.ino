@@ -37,6 +37,10 @@ DS3231 Clock;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
+char server[] = "dataservice.accuweather.com";
+
+WiFiClient client;
+
 //#define pin_A 16
 //#define pin_B 12
 //#define pin_sclk 0
@@ -210,44 +214,159 @@ String padZero(int val){
   return s;
 }
 
-long nowt, lastntp=-1;
+long nowt, lastntp=-1, lastweather=-1;
+bool needsStop = false;
+
+char temp_marker[]="\"Metric\":{\"Value\":";
+#define STATE_MARKER 1
+#define STATE_DECIMAL 2
+#define STATE_FRACTION 3
+
+int state;
+int markerPos;
+int decimal;
+float fraction, multiplier;
 
 void netupdate(){
   nowt = millis();
 
 //  Serial.println("Checking for timely updates");
 
-  if (exceeded(lastntp, 24*60*60*1000)){
-    Serial.println(F("Updating time..."));
-    if (timeClient.update()){
-      Serial.println(F("Received ntp"));
+  if (exceeded(lastntp, PERIOD_UPDATE_TIME)){
+   updateTime();
+  }
+
+  if (exceeded(lastweather, PERIOD_REQUEST_WEATHER)){
+    requestWeather();
+  }
+
+  while (client.available()) {
+    handleResponse();
+  }
+
+  if (needsStop && !client.connected()){
+    client.stop();
+    needsStop = false;
+  }
+}
+
+void requestWeather(){
+  resetParser();
+  if (!client.connect(server, 80)){
+    Serial.println(F("Failed to request weather"));
+    return;
+  }
+  Serial.println(F("Connected to server"));
+  // Make a HTTP request:
+  String req = F("GET /currentconditions/v1/");
+  req += AW_LOCATION_KEY;
+  req += F("?apikey=");
+  req += API_KEY;
+  req += F(" HTTP/1.1");
+//  Serial.print(F("Req:"));
+//  Serial.println(req);
+  client.println(req);
+  client.print(F("Host: "));
+  client.println(server);
+  client.println(F("Connection: close"));
+  client.println();
+  
+  needsStop = true;
+  lastweather = nowt;
+}
+
+void handleResponse(){
+  char c = client.read();
+//  Serial.print(c);
+  int d = c - '0';
+  switch(state){
+    case STATE_MARKER:
+      if (c==temp_marker[markerPos]){
+        markerPos++;
+//        Serial.print(F("Probably marker collected: "));
+//        Serial.print(markerPos);
+//        Serial.print(F(", symbol: "));
+//        Serial.println(c);
+                
+        if (markerPos >= sizeof(temp_marker)-1){
+          state = STATE_DECIMAL;
+        }        
+        break;
+      }
+      resetParser();
+      break;
+    case STATE_DECIMAL:
+//      Serial.print(F("Decimal char: "));
+//      Serial.println(c);
+      if (c=='.'){
+        state = STATE_FRACTION;
+        break;
+      }
+      if (d<0 || d>9){
+        onTemperatureLoaded();
+      }
+      else {
+        decimal *= 10;
+        decimal += d;
+      }
+      break;
+     case STATE_FRACTION:
+//      Serial.print(F("Fraction char: "));
+//      Serial.println(c);     
+      if (d<0 || d>9){
+        onTemperatureLoaded();
+      }
+      else {
+        multiplier /= 10.0;
+        fraction += multiplier*d;
+      }
+  }
+}
+
+void onTemperatureLoaded(){
+  float tempearature = fraction + decimal;
+  Serial.print(F("Temperature from server:"));
+  Serial.println(tempearature);
+  resetParser();
+}
+
+void resetParser(){
+  state = STATE_MARKER;
+  markerPos = 0;
+  decimal = 0;
+  fraction = 0;
+  multiplier = 1.0;
+}
+
+void updateTime(){
+   Serial.println(F("Updating time..."));
+    if (!timeClient.update()){
+      Serial.println(F("Failed to update time"));
+      return;
+    }
+    Serial.println(F("Received ntp"));
 
 //      long epoch = 1537678727; // 2018-09-23 7:58:47, Sunday, Kyiv, DST
 //      long epoch = 1518717827; // 2018-02-15 20:03:47, Thursday, Kyiv, NO DST
 //      long epoch = 1553950800; // 2019-03-30 15:00:00, Saturnday, Kyiv, NO DST
 //      long epoch = 1554004800; // 2019-03-31 07:00:00, Sunday, Kyiv, DST
 
-      long epoch = timeClient.getEpochTime();
-      epoch = toLocal(epoch, SHIFT_TIMEZONE, SHIFT_DST);
-  
-      Serial.print(F("Time: "));
-      Serial.println(timeClient.getFormattedTime());
-      Clock.setYear(year(epoch));
-      Clock.setMonth(month(epoch));
-      Clock.setDate(day(epoch));
-      int dow = (weekday(epoch)+5)%7+1;
-      Serial.print(F("Setting day of week: "));
-      Serial.println(dow);
-      Clock.setDoW(dow);
-      Clock.setHour(hour(epoch));
-      Clock.setMinute(minute(epoch));
-      Clock.setSecond(second(epoch));    
-      lastntp = nowt;
-    }
-    else {
-      Serial.println("Failed to update time");
-    }
-  }
+    long epoch = timeClient.getEpochTime();
+    epoch = toLocal(epoch, SHIFT_TIMEZONE, SHIFT_DST);
+
+//    Serial.print(F("Time: "));
+//    Serial.println(timeClient.getFormattedTime());
+    Clock.setYear(year(epoch));
+    Clock.setMonth(month(epoch));
+    Clock.setDate(day(epoch));
+    int dow = (weekday(epoch)+5)%7+1;
+    Serial.print(F("Setting day of week: "));
+    Serial.println(dow);
+    Clock.setDoW(dow);
+    Clock.setHour(hour(epoch));
+    Clock.setMinute(minute(epoch));
+    Clock.setSecond(second(epoch));    
+    lastntp = nowt;
 }
 
 bool exceeded(long last, long period){
