@@ -32,8 +32,13 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 ### [The 74HC595 Shift Register](https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/the-74hc595-shift-register)
 ## Libraries
 ### [DS3231](https://github.com/NorthernWidget/DS3231)
+### [DHT](https://github.com/adafruit/DHT-sensor-library)
 ### [DMD2 Library](https://github.com/freetronics/DMD2)
 ### [WiFiManager](https://github.com/tzapu/WiFiManager)
 ### [NTPClient](https://github.com/arduino-libraries/NTPClient)
+### [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+## Accuweather
+* [Request for current weather condition](https://developer.accuweather.com/accuweather-current-conditions-api/apis/get/currentconditions/v1/%7BlocationKey%7D)
+* Kyiv location key: 324505
 # Others
  * [Online Markdown editor](https://stackedit.io)

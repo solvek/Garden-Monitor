@@ -53,8 +53,9 @@ SoftDMD dmd(panel_width,panel_heigh);
 
 //Variables
 int chk;
-int hum;  //Stores humidity value
-int temp; //Stores temperature value
+int hum;
+float temp, tmpCorrection=0;
+float g=0.7;
 
 bool network = false;
 
@@ -141,12 +142,14 @@ void loop()
     //Read data and store it to variables hum and temp
     hum = dht.readHumidity()*63/100;
     temp= dht.readTemperature();
-//    temp = 44;
+
+    int tmp = temp+tmpCorrection;
+//    tmp = 44;
     dmd.clearScreen();
     String t = String();
-    if (temp>0) t += String(F("+"));
-    t +=String(temp)+F("&");
-    dmd.drawString(((temp>-10) && (temp<10)) ? 10 : 4,3,t);
+    if (tmp>0) t += String(F("+"));
+    t +=String(tmp)+F("&");
+    dmd.drawString(((tmp>-10) && (tmp<10)) ? 10 : 4,3,t);
     dmd.drawLine(0,0,hum-1,0);
     dmd.drawLine(0,15,hum-1,15);
     
@@ -324,10 +327,13 @@ void handleResponse(){
 }
 
 void onTemperatureLoaded(){
-  float tempearature = fraction + decimal;
+  float awt = fraction + decimal;
   Serial.print(F("Temperature from server:"));
-  Serial.println(tempearature);
+  Serial.println(awt);
   resetParser();
+
+  tmpCorrection *= 1-g;
+  tmpCorrection += (awt-temp)*g;
 }
 
 void resetParser(){
