@@ -3,8 +3,6 @@
  *  For example "#T180511051453"
 */
 
-#define ESP8266
-
 //Libraries
 #include <DHT.h>;
 #include <Wire.h>
@@ -19,6 +17,11 @@
 #define DELAY_DATE 4
 #define DELAY_TEMP 4
 
+// Shift in minutes from UTC
+#define SHIFT_TIMEZONE 120
+// Additional shift in minutes for DST
+#define SHIFT_DST 60
+
 
 #define DHTPIN 2     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
@@ -30,6 +33,7 @@ DS3231 Clock;
 #define panel_heigh 1
 
 #ifdef ESP8266
+#include <TimeLib.h>
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
 
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
@@ -37,6 +41,11 @@ DS3231 Clock;
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
 //#include "fonts/SystemFont5x7.h"
+
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 //#define pin_A 16
 //#define pin_B 12
@@ -53,15 +62,17 @@ int chk;
 int hum;  //Stores humidity value
 int temp; //Stores temperature value
 
+bool network = false;
+
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   #ifdef ESP8266
 //  dmd.selectFont(SystemFont5x7);
-  Serial.println("Writing hello world");
-  dmd.drawString(5, 3, F("Conn"));
-  Serial.println("Printed");
+//  Serial.println("Writing hello world");
+//  dmd.drawString(5, 3, F("Conn"));
+//  Serial.println("Printed");
   
   String apName = String("GM")+ESP.getChipId();  
 //  Serial.print("AP Name:");
@@ -75,7 +86,17 @@ void setup()
   char chars[len];
   apName.toCharArray(chars, len);
   wifiManager.setConfigPortalTimeout(600);
-  wifiManager.autoConnect(chars);
+  Serial.println(F("WiFi init"));
+  network = wifiManager.autoConnect(chars);
+
+  if (network){
+    Serial.println(F("WiFi initialized fine"));
+  }
+  else {
+    Serial.println(F("WiFi failed. Will not use wifi"));
+  }
+
+  timeClient.begin();
 
 //  dmd.begin();
   #endif  
@@ -108,11 +129,16 @@ void loop()
     readCommand();
 
     dmd.clearScreen();
-    dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));
-    int dow = 33*(Clock.getDoW()-1)/7;
+    dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));    
+    int dow = Clock.getDoW();
+
+//    Serial.print(F("Day of week from RTC: "));
+//    Serial.println(dow);
+
+    dow = 33*(dow-1)/7;
+
     dmd.drawLine(dow,0,dow+3,0);
     dmd.drawLine(dow,15,dow+3,15);    
-//    Serial.println(dow);
 //    Serial.println(now.year());
     delay(DELAY_DATE*1000);
 
@@ -135,6 +161,8 @@ void loop()
 //    Serial.println();
 
     readCommand();
+
+    if (network) netupdate();
 }
 
 void readCommand(){
@@ -190,5 +218,86 @@ String padZero(int val){
   String s = String(val);
   if (val < 10) s = "0"+s;
   return s;
+}
+
+long nowt, lastntp=-1;
+
+void netupdate(){
+  nowt = millis();
+
+//  Serial.println("Checking for timely updates");
+
+  if (exceeded(lastntp, 24*60*60*1000)){
+    Serial.println(F("Updating time..."));
+    if (timeClient.update()){
+      Serial.println(F("Received ntp"));
+
+//      long epoch = 1537678727; // 2018-09-23 7:58:47, Sunday, Kyiv, DST
+//      long epoch = 1518717827; // 2018-02-15 20:03:47, Thursday, Kyiv, NO DST
+//      long epoch = 1553950800; // 2019-03-30 15:00:00, Saturnday, Kyiv, NO DST
+//      long epoch = 1554004800; // 2019-03-31 07:00:00, Sunday, Kyiv, DST
+
+      long epoch = timeClient.getEpochTime();
+      epoch = toLocal(epoch, SHIFT_TIMEZONE, SHIFT_DST);
+  
+      Serial.print(F("Time: "));
+      Serial.println(timeClient.getFormattedTime());
+      Clock.setYear(year(epoch));
+      Clock.setMonth(month(epoch));
+      Clock.setDate(day(epoch));
+      int dow = (weekday(epoch)+5)%7+1;
+      Serial.print(F("Setting day of week: "));
+      Serial.println(dow);
+      Clock.setDoW(dow);
+      Clock.setHour(hour(epoch));
+      Clock.setMinute(minute(epoch));
+      Clock.setSecond(second(epoch));    
+      lastntp = nowt;
+    }
+    else {
+      Serial.println("Failed to update time");
+    }
+  }
+}
+
+bool exceeded(long last, long period){
+//  Serial.print("nowt=");
+//  Serial.println(nowt);
+//  Serial.print("period=");
+//  Serial.println(period);
+//  Serial.print("last=");
+//  Serial.println(last);
+  if (last < 0) return true;
+  
+  if (nowt > last){
+    return nowt - last > period;
+  }
+
+  return 2147483647-last > period-nowt;
+}
+
+// utc in seconds, shift and shiftDst in minutes, result in seconds
+long toLocal(long utc, long shift, long shiftDst){
+  long r = utc + shift*60;
+  int m = month(r);
+
+  if (((m>3)&&(m<10))
+  ||((m==3)&&!hasSundayAfter(r))
+  ||((m==10)&&hasSundayAfter(r))) {
+    r += shiftDst*60;
+  }
+
+  return r;
+}
+
+// Whethere there is a Sunday in current month after unix date t
+bool hasSundayAfter(long t){  
+  int m = month(t);
+  do{
+    t+=24*60*60;
+    if (weekday(t)==1) return true;
+  }
+  while(month(t)==m);
+  return false;
 }
 

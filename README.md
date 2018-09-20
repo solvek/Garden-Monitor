@@ -4,13 +4,18 @@ A useful monitor for garden displaying information on dot-matrix
 ![enter image description here](images/dmd.jpg)
 
 # Hardware
+As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
+## Arduino UNO
 ![enter image description here](images/wiring.png)
+## [Wemos D1/R1](https://wiki.wemos.cc/products:d1:d1)
+ * [Mapping GPIOs to Ds](https://jardikblog.wordpress.com/2016/11/02/wemos-d1-r1-vs-wemos-d1-r2/)
+ * [How to Program ESP8266 with Arduino UNO](https://www.hackster.io/harshmangukiya/how-to-program-esp8266-with-arduino-uno-efb05f)
 ## [RTC](https://www.makeuseof.com/tag/how-and-why-to-add-a-real-time-clock-to-arduino/)
 ## P10 Dot-Matrix display
- * [DMD2 Library](https://github.com/freetronics/DMD2)
  * [Instructable article](http://www.instructables.com/id/Display-Text-at-P10-LED-Display-Using-Arduino/)
 * [Linking dot matrix to Arduino](https://maker.pro/projects/arduino/arduino-led-matrix-controlled-android-app-greenpaks-i2c)
 *  [Font creator (Java based, use GLCDFontCreator2.zip)](https://code.google.com/archive/p/glcd-arduino/downloads)
+	 * Running FontCreator:  `java -classpath . FontCreator`
 ### Wiring
 |Letter|Meaning|Wire|Arduino|ESP8266|D1/R1|
 |--|--|--|--|--|--|
@@ -24,11 +29,11 @@ A useful monitor for garden displaying information on dot-matrix
 [Connecting to ESP8266](http://forum.freetronics.com/viewtopic.php?t=6687)
 
 ## Other hardware
- * [Board WeMos D1](https://wiki.wemos.cc/products:d1:d1)
- * [Mapping GPIOs to Ds](https://jardikblog.wordpress.com/2016/11/02/wemos-d1-r1-vs-wemos-d1-r2/)
- * [How to Program ESP8266 with Arduino UNO](https://www.hackster.io/harshmangukiya/how-to-program-esp8266-with-arduino-uno-efb05f)
- * [WiFiManager](https://github.com/tzapu/WiFiManager)
-	 * Running FontCreator:  `java -classpath . FontCreator`
- * [The 74HC595 Shift Register](https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/the-74hc595-shift-register)
+### [The 74HC595 Shift Register](https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/the-74hc595-shift-register)
+## Libraries
+### [DS3231](https://github.com/NorthernWidget/DS3231)
+### [DMD2 Library](https://github.com/freetronics/DMD2)
+### [WiFiManager](https://github.com/tzapu/WiFiManager)
+### [NTPClient](https://github.com/arduino-libraries/NTPClient)
 # Others
  * [Online Markdown editor](https://stackedit.io)
