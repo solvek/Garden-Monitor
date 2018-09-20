@@ -11,17 +11,7 @@
 #include <SPI.h>
 #include <DMD2.h>
 #include "fonts/GMSolvek.h"
-
-//Constants
-#define DELAY_TIME 12
-#define DELAY_DATE 4
-#define DELAY_TEMP 4
-
-// Shift in minutes from UTC
-#define SHIFT_TIMEZONE 120
-// Additional shift in minutes for DST
-#define SHIFT_DST 60
-
+#include "Config.h"
 
 #define DHTPIN 2     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
