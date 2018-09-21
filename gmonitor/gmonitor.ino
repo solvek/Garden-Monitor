@@ -1,9 +1,3 @@
-/* 
- *  To set datetime execute command "#TYYMMDDDwHHmmSS"
- *  For example "#T180511051453"
-*/
-
-//Libraries
 #include <DHT.h>;
 #include <Wire.h>
 #include "DS3231.h"
@@ -162,6 +156,8 @@ void loop()
     if (network) netupdate();
 }
 
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
 void readCommand(){
 //  Serial.println(F("Checking command"));
   int r;
@@ -178,6 +174,15 @@ void readCommand(){
   if (r == 84 || r == 116){
     commandSetTime();
   }
+  else if (r == 82 || r == 114){
+    Serial.println(F("Resetting device"));
+    resetFunc();
+  }
+#ifdef ESP8266  
+  else if (r == 87 || r == 119){
+    commandResetWifi();
+  }
+#endif  
   else {
     Serial.print(F("Unknown command: "));
     Serial.println(r);
@@ -217,6 +222,7 @@ String padZero(int val){
   return s;
 }
 
+#ifdef ESP8266
 long nowt, lastntp=-1, lastweather=-1;
 bool needsStop = false;
 
@@ -229,6 +235,14 @@ int state;
 int markerPos;
 int decimal;
 float fraction, multiplier;
+
+void commandResetWifi(){
+  Serial.println(F("Resetting wifi"));
+  dmd.end();
+  WiFiManager wifiManager;
+  wifiManager.resetSettings();
+//  resetFunc();
+}
 
 void netupdate(){
   nowt = millis();
@@ -415,4 +429,4 @@ bool hasSundayAfter(long t){
   while(month(t)==m);
   return false;
 }
-
+#endif
