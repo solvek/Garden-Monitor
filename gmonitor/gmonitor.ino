@@ -120,23 +120,16 @@ void loop()
     for(int i=0;i<DELAY_TIME;i++){
       dmd.drawBox(15,5,16,6);
       dmd.drawBox(15,9,16,10);
-      delay(500);
+      delay2(500);
       dmd.drawBox(15,5,16,10, GRAPHICS_OFF);
-      delay(500);
+      delay2(500);
     }    
 
     readCommand();
 
  #ifdef ESP8266    
     if (network){
-      netupdate();
-      MQTT_connect();
-      
-      mqtt.processPackets(10000);
-  
-      if(! mqtt.ping()) {
-        mqtt.disconnect();
-      }
+      netupdate();      
     }
  #endif
 
@@ -152,7 +145,7 @@ void loop()
     dmd.drawLine(dow,0,dow+3,0);
     dmd.drawLine(dow,15,dow+3,15);    
 //    Serial.println(now.year());
-    delay(DELAY_DATE*1000);
+    delay2(DELAY_DATE*1000);
 
     readCommand();
   
@@ -170,11 +163,25 @@ void loop()
     dmd.drawLine(0,0,hum-1,0);
     dmd.drawLine(0,15,hum-1,15);
     
-    delay(DELAY_TEMP*1000);
+    delay2(DELAY_TEMP*1000);
 
 //    Serial.println();
 
     readCommand();
+}
+
+void delay2(int ms){
+  #ifdef ESP8266
+  MQTT_connect();
+      
+  mqtt.processPackets(ms);
+  
+  if(!mqtt.ping()) {
+    mqtt.disconnect();
+  }
+  #else
+    delay(ms);
+  #endif
 }
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
@@ -458,7 +465,7 @@ bool hasSundayAfter(long t){
 
 void slidercallback(double x) {
   int b = (int)x;
-  Serial.print(F("Hey we're in a slider callback, the slider value is: "));
+  Serial.print(F("Received brightness update: "));
   Serial.println(x);  
   dmd.setBrightness(x);
 }
