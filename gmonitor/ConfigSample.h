@@ -21,3 +21,9 @@
 
 // Accuweather location key. 324505 - Kyiv
 #define AW_LOCATION_KEY 324505
+
+// IO Adafruit
+#define IO_SERVER "io.adafruit.com"
+#define IO_SERVERPORT 1883 // use 8883 for SSL
+#define IO_USERNAME    "PUT YOU VALUE!"
+#define IO_KEY         "PUT YOU VALUE!"

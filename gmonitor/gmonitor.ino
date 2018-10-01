@@ -28,12 +28,20 @@ DS3231 Clock;
 
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+
+#include "Adafruit_MQTT.h"
+#include "Adafruit_MQTT_Client.h"
+
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
 char server[] = "dataservice.accuweather.com";
 
 WiFiClient client;
+
+Adafruit_MQTT_Client mqtt(&client, IO_SERVER, IO_SERVERPORT, IO_USERNAME, IO_KEY);
+
+Adafruit_MQTT_Subscribe brightness = Adafruit_MQTT_Subscribe(&mqtt, IO_USERNAME "/feeds/garden-monitor.display-brightness");
 
 //#define pin_A 16
 //#define pin_B 12
@@ -56,6 +64,7 @@ bool network = false;
 void setup()
 {
   Serial.begin(115200);
+  Serial.println(F("Started device"));
 
   #ifdef ESP8266
 //  dmd.selectFont(SystemFont5x7);
@@ -80,14 +89,15 @@ void setup()
 
   if (network){
     Serial.println(F("WiFi initialized fine"));
+
+    timeClient.begin();
+  
+    brightness.setCallback(slidercallback);
+    mqtt.subscribe(&brightness);    
   }
   else {
     Serial.println(F("WiFi failed. Will not use wifi"));
   }
-
-  timeClient.begin();
-
-//  dmd.begin();
   #endif  
 
   // DMD init
@@ -97,7 +107,7 @@ void setup()
   
   // DHT init
   dht.begin();
-  Wire.begin();  
+  Wire.begin();
 }
 
 void loop()
@@ -116,6 +126,19 @@ void loop()
     }    
 
     readCommand();
+
+ #ifdef ESP8266    
+    if (network){
+      netupdate();
+      MQTT_connect();
+      
+      mqtt.processPackets(10000);
+  
+      if(! mqtt.ping()) {
+        mqtt.disconnect();
+      }
+    }
+ #endif
 
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));    
@@ -152,8 +175,6 @@ void loop()
 //    Serial.println();
 
     readCommand();
-
-    if (network) netupdate();
 }
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
@@ -174,11 +195,10 @@ void readCommand(){
   if (r == 84 || r == 116){
     commandSetTime();
   }
+#ifdef ESP8266
   else if (r == 82 || r == 114){
-    Serial.println(F("Resetting device"));
-    resetFunc();
+    commandRestart();
   }
-#ifdef ESP8266  
   else if (r == 87 || r == 119){
     commandResetWifi();
   }
@@ -242,6 +262,12 @@ void commandResetWifi(){
   WiFiManager wifiManager;
   wifiManager.resetSettings();
 //  resetFunc();
+}
+
+void commandRestart(){
+    Serial.println(F("Resetting device"));
+    dmd.end();
+    ESP.restart();
 }
 
 void netupdate(){
@@ -428,5 +454,37 @@ bool hasSundayAfter(long t){
   }
   while(month(t)==m);
   return false;
+}
+
+void slidercallback(double x) {
+  int b = (int)x;
+  Serial.print(F("Hey we're in a slider callback, the slider value is: "));
+  Serial.println(x);  
+  dmd.setBrightness(x);
+}
+
+void MQTT_connect() {
+  int8_t ret;
+
+  // Stop if already connected.
+  if (mqtt.connected()) {
+    return;
+  }
+
+  Serial.print(F("Connecting to MQTT... "));
+
+  uint8_t retries = 3;
+  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqtt.connectErrorString(ret));
+       Serial.println(F("Retrying MQTT connection in 10 seconds..."));
+       mqtt.disconnect();
+       delay(10000);  // wait 10 seconds
+       retries--;
+       if (retries == 0) {
+         // basically die and wait for WDT to reset me
+         while (1);
+       }
+  }
+  Serial.println(F("MQTT Connected!"));
 }
 #endif
