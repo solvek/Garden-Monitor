@@ -29,8 +29,8 @@ DS3231 Clock;
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-#include "Adafruit_MQTT.h"
-#include "Adafruit_MQTT_Client.h"
+//#include "Adafruit_MQTT.h"
+//#include "Adafruit_MQTT_Client.h"
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
@@ -39,9 +39,10 @@ char server[] = "dataservice.accuweather.com";
 
 WiFiClient client;
 
-Adafruit_MQTT_Client mqtt(&client, IO_SERVER, IO_SERVERPORT, IO_USERNAME, IO_KEY);
-
-Adafruit_MQTT_Subscribe brightness = Adafruit_MQTT_Subscribe(&mqtt, IO_USERNAME "/feeds/garden-monitor.display-brightness");
+//Adafruit_MQTT_Client mqtt(&client, IO_SERVER, IO_SERVERPORT, IO_USERNAME, IO_KEY);
+//
+//Adafruit_MQTT_Subscribe brightness = Adafruit_MQTT_Subscribe(&mqtt, IO_USERNAME "/feeds/garden-monitor.display-brightness");
+//Adafruit_MQTT_Subscribe onoffbutton = Adafruit_MQTT_Subscribe(&mqtt, IO_USERNAME "/feeds/garden-monitor.control");
 
 //#define pin_A 16
 //#define pin_B 12
@@ -92,8 +93,11 @@ void setup()
 
     timeClient.begin();
   
-    brightness.setCallback(slidercallback);
-    mqtt.subscribe(&brightness);    
+//    brightness.setCallback(slidercallback);
+//    onoffbutton.setCallback(onoffcallback);
+//    
+//    mqtt.subscribe(&brightness);
+//    mqtt.subscribe(&onoffbutton);    
   }
   else {
     Serial.println(F("WiFi failed. Will not use wifi"));
@@ -120,9 +124,9 @@ void loop()
     for(int i=0;i<DELAY_TIME;i++){
       dmd.drawBox(15,5,16,6);
       dmd.drawBox(15,9,16,10);
-      delay2(500);
+      delay(500);
       dmd.drawBox(15,5,16,10, GRAPHICS_OFF);
-      delay2(500);
+      delay(500);
     }    
 
     readCommand();
@@ -145,7 +149,7 @@ void loop()
     dmd.drawLine(dow,0,dow+3,0);
     dmd.drawLine(dow,15,dow+3,15);    
 //    Serial.println(now.year());
-    delay2(DELAY_DATE*1000);
+    delay(DELAY_DATE*1000);
 
     readCommand();
   
@@ -163,26 +167,26 @@ void loop()
     dmd.drawLine(0,0,hum-1,0);
     dmd.drawLine(0,15,hum-1,15);
     
-    delay2(DELAY_TEMP*1000);
+    delay(DELAY_TEMP*1000);
 
 //    Serial.println();
 
     readCommand();
 }
 
-void delay2(int ms){
-  #ifdef ESP8266
-  MQTT_connect();
-      
-  mqtt.processPackets(ms);
-  
-  if(!mqtt.ping()) {
-    mqtt.disconnect();
-  }
-  #else
-    delay(ms);
-  #endif
-}
+//void delay2(int ms){
+//  #ifdef ESP8266
+//  MQTT_connect();
+//      
+//  mqtt.processPackets(ms);
+//  
+//  if(!mqtt.ping()) {
+//    mqtt.disconnect();
+//  }
+//  #else
+//    delay(ms);
+//  #endif
+//}
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
@@ -198,7 +202,10 @@ void readCommand(){
 
 //  Serial.println(F("Expecting command"));
   r = inputSymbol();
-  
+  runCommand(r);  
+}
+
+void runCommand(int r){
   if (r == 84 || r == 116){
     commandSetTime();
   }
@@ -463,35 +470,43 @@ bool hasSundayAfter(long t){
   return false;
 }
 
-void slidercallback(double x) {
-  int b = (int)x;
-  Serial.print(F("Received brightness update: "));
-  Serial.println(x);  
-  dmd.setBrightness(x);
-}
-
-void MQTT_connect() {
-  int8_t ret;
-
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
-  }
-
-  Serial.print(F("Connecting to MQTT... "));
-
-  uint8_t retries = 3;
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println(F("Retrying MQTT connection in 10 seconds..."));
-       mqtt.disconnect();
-       delay(10000);  // wait 10 seconds
-       retries--;
-       if (retries == 0) {
-         // basically die and wait for WDT to reset me
-         while (1);
-       }
-  }
-  Serial.println(F("MQTT Connected!"));
-}
+//void slidercallback(double x) {
+//  int b = (int)x;
+//  Serial.print(F("Received brightness update: "));
+//  Serial.println(x);  
+//  dmd.setBrightness(x);
+//}
+//
+//void onoffcallback(char *data, uint16_t len) {
+//  Serial.print("Button value: ");
+//  Serial.println(data);
+//  if (len>=1) {
+//    runCommand(int(*data));
+//  }
+//}
+//
+//void MQTT_connect() {
+//  int8_t ret;
+//
+//  // Stop if already connected.
+//  if (mqtt.connected()) {
+//    return;
+//  }
+//
+//  Serial.print(F("Connecting to MQTT... "));
+//
+//  uint8_t retries = 3;
+//  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+//       Serial.println(mqtt.connectErrorString(ret));
+//       Serial.println(F("Retrying MQTT connection in 10 seconds..."));
+//       mqtt.disconnect();
+//       delay(10000);  // wait 10 seconds
+//       retries--;
+//       if (retries == 0) {
+//         // basically die and wait for WDT to reset me
+//         while (1);
+//       }
+//  }
+//  Serial.println(F("MQTT Connected!"));
+//}
 #endif
