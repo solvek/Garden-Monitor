@@ -16,6 +16,15 @@ DS3231 Clock;
 #define panel_width 1
 #define panel_heigh 1
 
+#define CONFIG_SECTOR 0x80-4
+#define CONFIG_ADDRESS ( (CONFIG_SECTOR) * 4096 )
+#define CONFIG_SPECIFIED_MARKER 107
+
+struct {
+   byte hasData;
+   byte brightness;
+} conf;
+
 #ifdef ESP8266
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
@@ -49,7 +58,6 @@ WiFiClient client;
 //#define pin_sclk 0
 //#define pin_noe 15
 SPIDMD dmd(panel_width, panel_heigh/*, pin_noe, pin_A, pin_B, pin_sclk*/);  // DMD controls the entire display
-
 #else
 SoftDMD dmd(panel_width,panel_heigh);
 #endif
@@ -102,10 +110,13 @@ void setup()
   else {
     Serial.println(F("WiFi failed. Will not use wifi"));
   }
+  spi_flash_read(CONFIG_ADDRESS ,(uint32 *)(&conf),sizeof(conf));
   #endif  
 
+  ensureConfig();
+
   // DMD init
-  dmd.setBrightness(255);
+  dmd.setBrightness(conf.brightness);
   dmd.selectFont(GMSolvek);
   dmd.begin();
   
@@ -174,6 +185,14 @@ void loop()
     readCommand();
 }
 
+void ensureConfig(){
+  Serial.print(F("Checking config. Brightness value is: "));
+  Serial.println(conf.brightness);
+  if (conf.hasData == CONFIG_SPECIFIED_MARKER) return;
+  conf.hasData = CONFIG_SPECIFIED_MARKER;
+  conf.brightness = 255;
+}
+
 //void delay2(int ms){
 //  #ifdef ESP8266
 //  MQTT_connect();
@@ -215,6 +234,9 @@ void runCommand(int r){
   }
   else if (r == 87 || r == 119){
     commandResetWifi();
+  }
+  else if (r == 66 || r == 98){
+    commandSetBrightness();
   }
 #endif  
   else {
@@ -470,11 +492,29 @@ bool hasSundayAfter(long t){
   return false;
 }
 
+void commandSetBrightness(){
+  byte b = (byte)readNumeral(3);
+  changeBrightness(b);
+}
+
+void changeBrightness(byte b){
+  Serial.print(F("Setting brightness: "));
+  Serial.println(b);
+  conf.brightness = b;
+  dmd.end();
+//  Serial.println(F("Erasing config sector"));
+  spi_flash_erase_sector(CONFIG_SECTOR);
+//  Serial.println(F("Writing config data"));
+  spi_flash_write(CONFIG_ADDRESS ,(uint32 *)(&conf),sizeof(conf));
+//  Serial.println(F("Setting brighness to dmd"));
+  dmd.begin();
+  dmd.setBrightness(b);
+//  Serial.println(F("Set brighness completed"));
+}
+
 //void slidercallback(double x) {
 //  int b = (int)x;
-//  Serial.print(F("Received brightness update: "));
-//  Serial.println(x);  
-//  dmd.setBrightness(x);
+//  changeBrightness((byte)b);
 //}
 //
 //void onoffcallback(char *data, uint16_t len) {
