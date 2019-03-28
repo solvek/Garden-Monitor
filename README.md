@@ -18,6 +18,7 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 ## [Wemos D1/R1](https://wiki.wemos.cc/products:d1:d1)
  * [Mapping GPIOs to Ds](https://jardikblog.wordpress.com/2016/11/02/wemos-d1-r1-vs-wemos-d1-r2/)
  * [How to Program ESP8266 with Arduino UNO](https://www.hackster.io/harshmangukiya/how-to-program-esp8266-with-arduino-uno-efb05f)
+
 |Arduino|D1/R1 label|
 |--|--|
 |D2|TX1/D9|
@@ -29,6 +30,7 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 |D13|D13/SCK/D5|
 |A4|D14/SDA/D4|
 |A5|D15/SCl/D3|
+
 ## [RTC](https://www.makeuseof.com/tag/how-and-why-to-add-a-real-time-clock-to-arduino/)
 ## P10 Dot-Matrix display
  * [Instructable article](http://www.instructables.com/id/Display-Text-at-P10-LED-Display-Using-Arduino/)
