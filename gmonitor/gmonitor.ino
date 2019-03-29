@@ -166,7 +166,16 @@ void loop()
   
     //Read data and store it to variables hum and temp
     hum = dht.readHumidity()*63/100;
-    temp= dht.readTemperature();
+    float st = dht.readTemperature();
+
+    if (st == st){
+      temp= st;
+    }else {
+      Serial.println(F("Could not read temperature from sensor. Using previous value"));
+    }
+
+    Serial.print(F("Sensor temperature: "));
+    Serial.println(temp);
 
     int tmp = temp+tmpCorrection;
 //    tmp = 44;
@@ -225,19 +234,19 @@ void readCommand(){
 }
 
 void runCommand(int r){
-  if (r == 84 || r == 116){
+  if (r == 84 || r == 116){ // T
     commandSetTime();
   }
 #ifdef ESP8266
-  else if (r == 82 || r == 114){
+  else if (r == 82 || r == 114){ // R
     commandRestart();
   }
-  else if (r == 87 || r == 119){
+  else if (r == 87 || r == 119){ // W
     commandResetWifi();
   }
-  else if (r == 66 || r == 98){
+  else if (r == 66 || r == 98){ // B
     commandSetBrightness();
-  }
+  }  
 #endif  
   else {
     Serial.print(F("Unknown command: "));

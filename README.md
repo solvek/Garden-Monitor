@@ -31,6 +31,10 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 |A4|D14/SDA/D4|
 |A5|D15/SCl/D3|
 
+### Bus mapping
+
+![Bus mapping](images/DisplayBus.png)
+
 ## [RTC](https://www.makeuseof.com/tag/how-and-why-to-add-a-real-time-clock-to-arduino/)
 ## P10 Dot-Matrix display
  * [Instructable article](http://www.instructables.com/id/Display-Text-at-P10-LED-Display-Using-Arduino/)
