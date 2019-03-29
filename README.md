@@ -9,8 +9,13 @@ Example: `#T18051102051453`
 `Dw` - day of week, Monday - `01`, Sunday - `07`
 ## Reset WiFi
 `#W`
-## Restart devoce
+## Restart device
 `#R`
+## Setting brightness
+`#BNNN`
+
+NNN - are 3 digits. Use 015 for 15. The value between 000 and 255
+
 # Hardware
 As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 ## Arduino UNO
