@@ -81,7 +81,7 @@ void setup()
 //  dmd.drawString(5, 3, F("Conn"));
 //  Serial.println("Printed");
   
-  wifiConfig(false);
+  wifiConfig();
   spi_flash_read(CONFIG_ADDRESS ,(uint32 *)(&conf),sizeof(conf));
   #endif  
 
@@ -118,8 +118,8 @@ void loop()
     if (network){
       netupdate();      
     }
-//    else {
-//      wifiConfig(true);
+//    else if (millis() > 2*60*60*1000){ // If wifi was not connected while setup then we need reset after a while
+//      ESP.restart();
 //    }
  #endif
 
@@ -496,7 +496,7 @@ void changeBrightness(byte b){
 //  Serial.println(F("Set brighness completed"));
 }
 
-void wifiConfig(bool reconnect){
+void wifiConfig(){
   if (network) return;
 
   String apName = String("GM")+ESP.getChipId();  
@@ -510,9 +510,9 @@ void wifiConfig(bool reconnect){
   int len = apName.length();
   char chars[len];
   apName.toCharArray(chars, len);
-  wifiManager.setConfigPortalTimeout(120);
+  wifiManager.setConfigPortalTimeout(300);
   Serial.println(F("WiFi init"));
-  network = reconnect ? wifiManager.startConfigPortal(chars) : wifiManager.autoConnect(chars);
+  network = wifiManager.autoConnect(chars);
   dmd.begin();
 
   if (network){

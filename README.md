@@ -24,17 +24,17 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
  * [Mapping GPIOs to Ds](https://jardikblog.wordpress.com/2016/11/02/wemos-d1-r1-vs-wemos-d1-r2/)
  * [How to Program ESP8266 with Arduino UNO](https://www.hackster.io/harshmangukiya/how-to-program-esp8266-with-arduino-uno-efb05f)
 
-|Arduino|D1/R1 label|
-|--|--|
-|D2|TX1/D9|
-|D6|D2|
-|D7|D12/MISO/D6|
-|D8|D10/SS|
-|D9|D8|
-|D11|D11/MOSI/D7|
-|D13|D13/SCK/D5|
-|A4|D14/SDA/D4|
-|A5|D15/SCl/D3|
+|Arduino|D1/R1 label|GPIO|
+|--|--|--|
+|D2|TX1/D9|GPIO2|
+|D6|D2|GPIO16|
+|D7|D12/MISO/D6|GPIO12|
+|D8|D10/SS|GPIO15|
+|D9|D8|GPIO0|
+|D11|D11/MOSI/D7|GPIO13|
+|D13|D13/SCK/D5|GPIO14|
+|A4|D14/SDA/D4|GPIO4|
+|A5|D15/SCl/D3|GPIO5|
 
 ### Bus mapping
 
