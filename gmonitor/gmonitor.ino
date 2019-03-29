@@ -81,35 +81,7 @@ void setup()
 //  dmd.drawString(5, 3, F("Conn"));
 //  Serial.println("Printed");
   
-  String apName = String("GM")+ESP.getChipId();  
-//  Serial.print("AP Name:");
-//  Serial.println(apName);
-//  Serial.print("Chip id:");
-//  Serial.println(ESP.getChipId());
-
-//  dmd.end();
-  WiFiManager wifiManager;
-  int len = apName.length();
-  char chars[len];
-  apName.toCharArray(chars, len);
-  wifiManager.setConfigPortalTimeout(600);
-  Serial.println(F("WiFi init"));
-  network = wifiManager.autoConnect(chars);
-
-  if (network){
-    Serial.println(F("WiFi initialized fine"));
-
-    timeClient.begin();
-  
-//    brightness.setCallback(slidercallback);
-//    onoffbutton.setCallback(onoffcallback);
-//    
-//    mqtt.subscribe(&brightness);
-//    mqtt.subscribe(&onoffbutton);    
-  }
-  else {
-    Serial.println(F("WiFi failed. Will not use wifi"));
-  }
+  wifiConfig(false);
   spi_flash_read(CONFIG_ADDRESS ,(uint32 *)(&conf),sizeof(conf));
   #endif  
 
@@ -146,6 +118,9 @@ void loop()
     if (network){
       netupdate();      
     }
+//    else {
+//      wifiConfig(true);
+//    }
  #endif
 
     dmd.clearScreen();
@@ -519,6 +494,41 @@ void changeBrightness(byte b){
   dmd.begin();
   dmd.setBrightness(b);
 //  Serial.println(F("Set brighness completed"));
+}
+
+void wifiConfig(bool reconnect){
+  if (network) return;
+
+  String apName = String("GM")+ESP.getChipId();  
+//  Serial.print("AP Name:");
+//  Serial.println(apName);
+//  Serial.print("Chip id:");
+//  Serial.println(ESP.getChipId());
+
+  dmd.end();
+  WiFiManager wifiManager;
+  int len = apName.length();
+  char chars[len];
+  apName.toCharArray(chars, len);
+  wifiManager.setConfigPortalTimeout(120);
+  Serial.println(F("WiFi init"));
+  network = reconnect ? wifiManager.startConfigPortal(chars) : wifiManager.autoConnect(chars);
+  dmd.begin();
+
+  if (network){
+    Serial.println(F("WiFi initialized fine"));
+
+    timeClient.begin();
+  
+//    brightness.setCallback(slidercallback);
+//    onoffbutton.setCallback(onoffcallback);
+//    
+//    mqtt.subscribe(&brightness);
+//    mqtt.subscribe(&onoffbutton);    
+  }
+  else {
+    Serial.println(F("WiFi failed. Will not use wifi"));
+  }
 }
 
 //void slidercallback(double x) {

@@ -18,7 +18,7 @@ NNN - are 3 digits. Use 015 for 15. The value between 000 and 255
 
 # Hardware
 As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
-## Arduino UNO
+## Controller
 ![enter image description here](images/wiring.png)
 ## [Wemos D1/R1](https://wiki.wemos.cc/products:d1:d1)
  * [Mapping GPIOs to Ds](https://jardikblog.wordpress.com/2016/11/02/wemos-d1-r1-vs-wemos-d1-r2/)
