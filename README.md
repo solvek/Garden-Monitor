@@ -11,6 +11,9 @@ Example: `#T18051102051453`
 `#W`
 ## Restart device
 `#R`
+
+I noticed that restart does not work if I do this just after sketch uploading. I have to do at least once manual reset for this function to work.
+
 ## Setting brightness
 `#BNNN`
 

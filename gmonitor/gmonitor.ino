@@ -118,9 +118,9 @@ void loop()
     if (network){
       netupdate();      
     }
-//    else if (millis() > 2*60*60*1000){ // If wifi was not connected while setup then we need reset after a while
-//      ESP.restart();
-//    }
+    else if (millis() > 2*60*60*1000){ // If wifi was not connected while setup then we need reset after a while
+      ESP.restart();
+    }
  #endif
 
     dmd.clearScreen();
@@ -287,6 +287,7 @@ void commandResetWifi(){
 void commandRestart(){
     Serial.println(F("Resetting device"));
     dmd.end();
+    delay(1000);
     ESP.restart();
 }
 
