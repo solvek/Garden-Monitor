@@ -5,7 +5,7 @@ A useful monitor for garden displaying information on dot-matrix
 # Terminal Commands
 ## Setting time
 Format: `#TYYMMDDDwHHmmSS`
-Example: `#T18051102051453`
+Example: `#T19042504165700`
 `Dw` - day of week, Monday - `01`, Sunday - `07`
 ## Reset WiFi
 `#W`
@@ -37,7 +37,7 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 |D11|D11/MOSI/D7|GPIO13|
 |D13|D13/SCK/D5|GPIO14|
 |A4|D14/SDA/D4|GPIO4|
-|A5|D15/SCl/D3|GPIO5|
+|A5|D15/SCL/D3|GPIO5|
 
 ### Bus mapping
 
