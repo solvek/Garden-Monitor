@@ -97,8 +97,6 @@ void setup()
   Wire.begin();
 }
 
-unsigned char buf[16] = {0};
-unsigned char len = 0;
 int c;
 
 void loop()
@@ -208,9 +206,16 @@ inline void showTemp(){
 
   if (st == st){
     temp= st;
-    t = padZero(st*10);
     ble_write('#');
     ble_write('K');
+    if (st < 0){
+      ble_write('-');
+      st = - st;
+    }
+    else {
+      ble_write('+');
+    }
+    t = padZero(st*10);
     ble_write(t.charAt(0));
     ble_write(t.charAt(1));
     ble_write(t.charAt(2));
