@@ -8,30 +8,39 @@
         tools:context=".MainActivity">
 
     <Button
-            android:id="@+id/buttonConnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/connect"
-            android:enabled="false"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+        android:id="@+id/buttonConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/connect"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_weight="1"/>
+
     <Button
-            android:id="@+id/buttonDisconnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/disconnect"
-            android:enabled="false"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonConnect"/>
+        android:id="@+id/buttonDisconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/disconnect"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/buttonConnect"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_weight="1"/>
+
+    <TextView
+        android:id="@+id/tvTemperature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/buttonConnect"/>
+
     <EditText
         android:id="@+id/etSend"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonDisconnect"/>
+        app:layout_constraintTop_toBottomOf="@+id/tvTemperature" />
     <Button
         android:id="@+id/buttonSend"
         android:layout_width="match_parent"

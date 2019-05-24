@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                         s -> getGattService(s.supportedGattService)
                     }
                 }
-                RBLService.ACTION_DATA_AVAILABLE -> displayData(intent.getByteArrayExtra(RBLService.EXTRA_DATA))
+                RBLService.ACTION_DATA_AVAILABLE -> handleBleInput(intent.getByteArrayExtra(RBLService.EXTRA_DATA))
             }
         }
     }
@@ -82,10 +82,21 @@ class MainActivity : AppCompatActivity() {
         mBluetoothLeService?.readCharacteristic(characteristicRx)
     }
 
-    private fun displayData(byteArray: ByteArray?) {
+    private fun handleBleInput(byteArray: ByteArray?) {
         if (byteArray == null) return
         val data = String(byteArray)
-        tvResponses.append(data)
+        if (data.startsWith("#K")){
+            try {
+                val temp = Integer.parseInt(data.substring(2, 6)) / 10.0
+                tvTemperature.text = "Temperature: $temp"
+            }
+            catch(e: NumberFormatException){
+                Log.e(TAG, "Failed to parse temperature: $data")
+            }
+        }
+        else {
+            tvResponses.append(data)
+        }
     }
 
     private fun connect(service: RBLService){
