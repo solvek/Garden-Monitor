@@ -131,14 +131,7 @@ void loop()
 
 void nextState(){
   recentM = m;
-  if (state == STATE_TICK_OFF && tick<DELAY_TIME){
-    state = STATE_TICK_ON;
-    tick++;
-  }
-  else {
-    state++;
-  }
-  if (state > STATE_TICK_TEMP) state= STATE_TIME;
+  transitState();
   state_time = 500;
   switch(state){
     case STATE_TIME:
@@ -160,6 +153,17 @@ void nextState(){
       showTemp();
       break;      
   }
+}
+
+void transitState(){
+  if (state == STATE_TICK_OFF && tick<DELAY_TIME){
+    state = STATE_TICK_ON;
+    tick++;
+  }
+  else {
+    state++;
+  }
+  if (state > STATE_TICK_TEMP) state= STATE_TIME;
 }
 
 DateTime now;
@@ -197,23 +201,31 @@ inline void showDate(){
 
 int hum, temp, tmp;
 float st;
+String t;
 inline void showTemp(){
   hum = dht.readHumidity()*63/100;
   st = dht.readTemperature();
 
   if (st == st){
     temp= st;
+    t = padZero(st*10);
+    ble_write('#');
+    ble_write('K');
+    ble_write(t.charAt(0));
+    ble_write(t.charAt(1));
+    ble_write(t.charAt(2));
+    ble_write('\13');
   }else {
       Serial.println(F("Could not read temperature from sensor. Using previous value"));
   }
 
-  Serial.print(F("Sensor temperature: "));
-  Serial.println(temp);
+//  Serial.print(F("Sensor temperature: "));
+//  Serial.println(temp);
 
   tmp = temp/*+tmpCorrection*/;
 //    tmp = 44;
   dmd.clearScreen();
-  String t = String();
+  t = String();
   if (tmp>0) t += String(F("+"));
   t +=String(tmp)+F("&");
   dmd.drawString(((tmp>-10) && (tmp<10)) ? 10 : 4,3,t);
