@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Garden Monitor</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="send">Send</string>
+    <string name="service_disconnected">Service disconnected. Restart the activity.</string>
+</resources>

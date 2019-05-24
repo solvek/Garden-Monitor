@@ -18,6 +18,12 @@ DS3231 Clock;
 
 SoftDMD dmd(panel_width,panel_heigh);
 
+#define PIN_WIFI_RX 5
+#define PIN_WIFI_TX 4
+
+#include <SoftwareSerial.h>
+SoftwareSerial wifi(PIN_WIFI_RX, PIN_WIFI_TX);
+
 //Variables
 int chk;
 int hum;
@@ -28,9 +34,11 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println(F("Started device"));
+  
+  wifi.begin(9600);
 
   // DMD init
-  dmd.setBrightness(128);
+  dmd.setBrightness(50);
   dmd.selectFont(GMSolvek);
   dmd.begin();
   
@@ -43,6 +51,7 @@ void loop()
 {
     DateTime now = RTC.now();
 
+    Serial.println(F("Showing time"));
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.hour()));
     dmd.drawString(18,3,padZero(now.minute()));
@@ -56,6 +65,7 @@ void loop()
 
     readCommand();
 
+    Serial.println(F("Showing date"));
     dmd.clearScreen();
     dmd.drawString(1,3,padZero(now.day())+F(".")+padZero(now.month()));    
     int dow = Clock.getDoW();
@@ -75,7 +85,8 @@ void loop()
     delay(DELAY_DATE*1000);
 
     readCommand();
-  
+
+    Serial.println(F("Showing tmp"));
     //Read data and store it to variables hum and temp
     hum = dht.readHumidity()*63/100;
     float st = dht.readTemperature();
@@ -127,6 +138,9 @@ void runCommand(int r){
   if (r == 84 || r == 116){ // T
     commandSetTime();
   }
+  if (r == 80 || r == 112){ // P
+    commandPipe();
+  }
   else {
     Serial.print(F("Unknown command: "));
     Serial.println(r);
@@ -164,6 +178,23 @@ void commandSetTime(){
   Clock.setHour(readNumeral(2));
   Clock.setMinute(readNumeral(2));
   Clock.setSecond(readNumeral(2));
+}
+
+void commandPipe(){
+  Serial.println(F("Piping esp"));
+  readAll();
+  for(;;){
+   if (Serial.available()) return;
+   if (wifi.available()){
+    Serial.write(wifi.read());
+   }
+ } 
+}
+
+void readAll(){
+  while(Serial.available()){
+    Serial.read();
+  }
 }
 
 int readNumeral(int count){
