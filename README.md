@@ -6,7 +6,7 @@ A useful monitor for garden displaying information on dot-matrix
 
 |Format|Description|Details|
 |--|--|--|
-|`#TYYMMDDDwHHmmSS`|Setting time|`#T19042504165700`.  `Dw` - day of week, Monday - `01`, Sunday - `07`|
+|`#TYYMMDDDwHHmmSS`|Setting time|`#T19052405180500`.  `Dw` - day of week, Monday - `01`, Sunday - `07`|
 |`#R`|I noticed that restart does not work if I do this just after sketch uploading. I have to do at least once manual reset for this function to work.|
 |`#BNNN`|Setting brightness|NNN - are 3 digits. Use 015 for 15. The value between 000 and 255|
 |`#KSNNN`|Sends current temperature from sensor|NNN - are 3 digits. Use 015 for 15. S - sign "-" or "+"|

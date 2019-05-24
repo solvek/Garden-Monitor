@@ -99,6 +99,10 @@ void setup()
 
 int c;
 
+#define CHANNEL_SERIAL 1
+#define CHANNEL_BLE 2
+int channel = CHANNEL_SERIAL;
+
 void loop()
 {
   m = millis();
@@ -106,8 +110,15 @@ void loop()
   
   if ( ble_available() )
   {
-    while ( ble_available() )
-      Serial.write(ble_read());
+    while ( ble_available() ){
+      c = ble_read();
+      if (c==35){
+        channel = CHANNEL_BLE;
+        readCommand();
+      }
+      
+      Serial.write(c);
+    }
       
     Serial.println();
   }
@@ -118,7 +129,10 @@ void loop()
     
     while ( Serial.available() ){
       c = Serial.read();
-      if (c==35) ble_begin();
+      if (c==35){
+        channel = CHANNEL_SERIAL;
+        readCommand();
+      }
 //      Serial.println(c);
       ble_write(c);
     }
@@ -241,5 +255,49 @@ inline void showTemp(){
 String padZero(int val){
   String s = String(val);
   if (val < 10) s = "0"+s;
+  return s;
+}
+
+void readCommand(){
+  int r = inputSymbol();
+  if (r == 84 || r == 116){ // T
+    commandSetTime();
+  }
+  else {
+    Serial.print(F("Unknown command: "));
+    Serial.println(r);
+  }
+}
+
+void commandSetTime(){
+//  Serial.println("Setting time");
+  Clock.setYear(readNumeral(2));
+  Clock.setMonth(readNumeral(2));
+  Clock.setDate(readNumeral(2));
+  Clock.setDoW(readNumeral(2));
+  Clock.setHour(readNumeral(2));
+  Clock.setMinute(readNumeral(2));
+  Clock.setSecond(readNumeral(2));
+}
+
+int readNumeral(int count){
+  int r = 0;
+  for(int i=0;i<count;i++){
+    r *= 10;
+    r += inputSymbol()-48;
+  }
+  Serial.print("Got numeral:");
+  Serial.println(r);
+  return r;
+}
+
+int inputSymbol(){
+  int s;
+  if (channel == CHANNEL_SERIAL) {
+    while((s=Serial.read()) == -1);
+  }
+  else {
+    while((s=ble_read()) == -1);
+  }
   return s;
 }
