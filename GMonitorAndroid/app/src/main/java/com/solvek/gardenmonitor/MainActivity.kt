@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         buttonDisconnect.setOnClickListener{disconnect()}
         buttonSend.setOnClickListener{send()}
         buttonTime.setOnClickListener{setClock()}
+        buttonRestart.setOnClickListener{restart()}
         sbBrightness.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -131,6 +132,7 @@ class MainActivity : AppCompatActivity() {
         buttonDisconnect.isEnabled = allowDisconnect
         buttonTime.isEnabled = allowDisconnect
         buttonSend.isEnabled = allowDisconnect
+        buttonRestart.isEnabled = allowDisconnect
         sbBrightness.isEnabled = allowDisconnect
     }
 
@@ -141,6 +143,10 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SimpleDateFormat")
     private fun setClock() {
         send("#T${SimpleDateFormat("yyMMdduuHHmmss").format(Date())}")
+    }
+
+    private fun restart() {
+        send("#R")
     }
 
     private fun send(){

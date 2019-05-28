@@ -264,6 +264,8 @@ String padZero(int val){
   return s;
 }
 
+void(* commandRestart) (void) = 0;
+
 void readCommand(){
   int r = inputSymbol();
   if (r == 84 || r == 116){ // T
@@ -271,6 +273,9 @@ void readCommand(){
   }
   else if (r == 66 || r == 98){ // B
     commandSetBrightness();
+  }
+  else if (r == 82 || r == 114){ // R
+    commandRestart();
   }  
   else {
     Serial.print(F("Unknown command: "));
