@@ -59,6 +59,26 @@ RTClib RTC;
 DS3231 Clock;
 
 #define ADDR_BRIGHTNESS 116
+#define ADDR_T_CORR 120
+
+#include <math.h>
+double v = tanh(23.535);
+
+#define G1 (1.0/256)
+#define P1 (-10)
+#define Q1 10
+double t1 = tanh(127*G1);
+double n1 = (Q1-P1)/(t1 - tanh(-128*G1));
+double m1 = Q1 - n1*t1;
+
+#define G2 (1.0/256)
+#define P2 -1
+#define Q2 1
+double t2 = tanh(127*G2);
+double n2 = (Q2-P2)/(t2 - tanh(-128*G2));
+double m2 = Q2 - n2*t2;
+
+double correl_b, correl_k;
 
 #include "Config.h"
 
@@ -97,6 +117,10 @@ void setup()
   // DHT init
   dht.begin();
   Wire.begin();
+
+  byte paramB = EEPROM.read(ADDR_T_CORR),
+    paramK = EEPROM.read(ADDR_T_CORR+1);
+  setCorrelation(paramB, paramK);
 }
 
 int c;
@@ -220,12 +244,17 @@ inline void showDate(){
 int hum, temp, tmp;
 float st;
 String t;
+
 inline void showTemp(){
   hum = dht.readHumidity()*63/100;
   st = dht.readTemperature();
 
   if (st == st){
-    temp= st;
+    temp = st*correl_k+correl_b;
+    Serial.print(F("Sensor tmp: "));
+    Serial.println(st);
+    Serial.print(F("Corrd tmp: "));
+    Serial.println(temp);
     ble_write('#');
     ble_write('K');
     if (st < 0){
@@ -277,6 +306,9 @@ void readCommand(){
   else if (r == 82 || r == 114){ // R
     commandRestart();
   }  
+  else if (r == 67 || r == 99){ // C
+    commandCorrelation();
+  }  
   else {
     Serial.print(F("Unknown command: "));
     Serial.println(r);
@@ -299,6 +331,14 @@ void commandSetBrightness(){
   changeBrightness(b);
 }
 
+void commandCorrelation(){
+  byte paramB = readNumeral(3),
+    paramK = readNumeral(3);
+  EEPROM.write(ADDR_T_CORR, paramB);
+  EEPROM.write(ADDR_T_CORR+1, paramK);
+  setCorrelation(paramB, paramK);
+}
+
 void changeBrightness(byte b){
   Serial.print(F("Setting brightness: "));
   Serial.println(b);
@@ -315,7 +355,7 @@ int readNumeral(int count){
     r *= 10;
     r += inputSymbol()-48;
   }
-  Serial.print("Got numeral:");
+  Serial.print(F("Got numeral:"));
   Serial.println(r);
   return r;
 }
@@ -329,4 +369,25 @@ int inputSymbol(){
     while((s=ble_read()) == -1);
   }
   return s;
+}
+
+void setCorrelation(byte paramB, byte paramK){
+  correl_b = m1 + n1*tanh(G1*(paramB-128));
+  correl_k = pow(2, m2 + n2*tanh(G2*(paramK-128)));
+
+  Serial.println(F("Correlation setup"));
+  Serial.print(F("m1: "));
+  Serial.println(m1);
+  Serial.print(F("n1: "));
+  Serial.println(n1);  
+  Serial.print(F("t1: "));
+  Serial.println(t1);
+  Serial.print(F("Param B: "));
+  Serial.println(paramB);
+  Serial.print(F("Param K: "));
+  Serial.println(paramK);
+  Serial.print(F("Correl B: "));
+  Serial.println(correl_b);
+  Serial.print(F("Correl K: "));
+  Serial.println(correl_k);
 }
