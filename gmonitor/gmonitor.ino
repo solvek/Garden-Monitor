@@ -300,6 +300,7 @@ void changeBrightness(byte b){
   dmd.end();
   dmd.begin();
   dmd.setBrightness(b);
+  dmd.drawFilledBox(0,0,b/8,15);
   EEPROM.write(ADDR_BRIGHTNESS, b); 
 }
 

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
 import com.redbear.chat.RBLService
 import kotlinx.android.synthetic.main.activity_main.*
@@ -30,6 +31,13 @@ class MainActivity : AppCompatActivity() {
         buttonDisconnect.setOnClickListener{disconnect()}
         buttonSend.setOnClickListener{send()}
         buttonTime.setOnClickListener{setClock()}
+        sbBrightness.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                seekBar?.let {sb -> setBrightness(sb.progress)}
+            }
+        })
 
         val gattServiceIntent = Intent(this, RBLService::class.java)
         bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)
@@ -126,6 +134,11 @@ class MainActivity : AppCompatActivity() {
         sbBrightness.isEnabled = allowDisconnect
     }
 
+    private fun setBrightness(b: Int){
+        send("#B${String.format("%03d", b)}")
+    }
+
+    @SuppressLint("SimpleDateFormat")
     private fun setClock() {
         send("#T${SimpleDateFormat("yyMMdduuHHmmss").format(Date())}")
     }
