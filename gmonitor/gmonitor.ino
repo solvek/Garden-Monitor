@@ -1,4 +1,4 @@
-/*
+  /*
 
 Copyright (c) 2012-2014 RedBearLab
 
@@ -58,6 +58,8 @@ DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 RTClib RTC;
 DS3231 Clock;
 
+#define ADDR_BRIGHTNESS 116
+
 #include "Config.h"
 
 #define STATE_TIME 1
@@ -77,7 +79,7 @@ void setup()
   Serial.begin(57600);
   
   Serial.println(F("Started device"));
-  dmd.setBrightness(20); // Set brightness 0 - 255 
+  dmd.setBrightness(EEPROM.read(ADDR_BRIGHTNESS));
   dmd.selectFont(GMSolvek); // Font used
   dmd.begin();     // Start DMD 
   Serial.println(F("Display initialized"));  
@@ -102,6 +104,10 @@ int c;
 #define CHANNEL_SERIAL 1
 #define CHANNEL_BLE 2
 int channel = CHANNEL_SERIAL;
+
+// Buffer for BLE
+unsigned char buf[16] = {0};
+unsigned char len = 0;
 
 void loop()
 {
@@ -263,6 +269,9 @@ void readCommand(){
   if (r == 84 || r == 116){ // T
     commandSetTime();
   }
+  else if (r == 66 || r == 98){ // B
+    commandSetBrightness();
+  }  
   else {
     Serial.print(F("Unknown command: "));
     Serial.println(r);
@@ -278,6 +287,20 @@ void commandSetTime(){
   Clock.setHour(readNumeral(2));
   Clock.setMinute(readNumeral(2));
   Clock.setSecond(readNumeral(2));
+}
+
+void commandSetBrightness(){
+  byte b = (byte)readNumeral(3);
+  changeBrightness(b);
+}
+
+void changeBrightness(byte b){
+  Serial.print(F("Setting brightness: "));
+  Serial.println(b);
+  dmd.end();
+  dmd.begin();
+  dmd.setBrightness(b);
+  EEPROM.write(ADDR_BRIGHTNESS, b); 
 }
 
 int readNumeral(int count){

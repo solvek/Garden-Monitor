@@ -53,6 +53,9 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 
 [Connecting to ESP8266](http://forum.freetronics.com/viewtopic.php?t=6687)
 
+## BLE Shield
+ * [Library](https://github.com/RedBearLab/nRF8001)
+
 ## Other hardware
 ### [The 74HC595 Shift Register](https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/the-74hc595-shift-register)
 # Libraries
