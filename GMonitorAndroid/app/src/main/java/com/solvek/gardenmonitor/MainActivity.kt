@@ -1,5 +1,6 @@
 package com.solvek.gardenmonitor
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.content.*
@@ -10,13 +11,14 @@ import android.util.Log
 import android.widget.Toast
 import com.redbear.chat.RBLService
 import kotlinx.android.synthetic.main.activity_main.*
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
 
 
 class MainActivity : AppCompatActivity() {
     private var mBluetoothLeService: RBLService? = null
-    val mDeviceAddress = "F6:30:3E:A2:AF:0B"
+    private val mDeviceAddress = "F6:30:3E:A2:AF:0B"
 
     private val map = HashMap<UUID, BluetoothGattCharacteristic>()
 
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         buttonConnect.setOnClickListener{mBluetoothLeService?.let {s ->  connect(s)}}
         buttonDisconnect.setOnClickListener{disconnect()}
         buttonSend.setOnClickListener{send()}
+        buttonTime.setOnClickListener{setClock()}
 
         val gattServiceIntent = Intent(this, RBLService::class.java)
         bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE)
@@ -82,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         mBluetoothLeService?.readCharacteristic(characteristicRx)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handleBleInput(byteArray: ByteArray?) {
         if (byteArray == null) return
         val data = String(byteArray)
@@ -117,11 +121,23 @@ class MainActivity : AppCompatActivity() {
     private fun connectState(allowConnect: Boolean, allowDisconnect: Boolean){
         buttonConnect.isEnabled = allowConnect
         buttonDisconnect.isEnabled = allowDisconnect
+        buttonTime.isEnabled = allowDisconnect
+        buttonSend.isEnabled = allowDisconnect
+        sbBrightness.isEnabled = allowDisconnect
+    }
+
+    private fun setClock() {
+        send("#T${SimpleDateFormat("yyMMdduuHHmmss").format(Date())}")
     }
 
     private fun send(){
         val text = etSend.text.toString()
 
+        send(text)
+    }
+
+    private fun send(text: String){
+        Log.d(TAG, "Sending to device via BLE: $text")
         val b: Byte = 0x00
         val tmp = text.toByteArray()
         val tx = ByteArray(tmp.size + 1)
