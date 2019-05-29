@@ -3,21 +3,14 @@
 A useful monitor for garden displaying information on dot-matrix
 ![enter image description here](images/dmd.jpg)
 # Terminal Commands
-## Setting time
-Format: `#TYYMMDDDwHHmmSS`
-Example: `#T19042504165700`
-`Dw` - day of week, Monday - `01`, Sunday - `07`
-## Reset WiFi
-`#W`
-## Restart device
-`#R`
 
-I noticed that restart does not work if I do this just after sketch uploading. I have to do at least once manual reset for this function to work.
-
-## Setting brightness
-`#BNNN`
-
-NNN - are 3 digits. Use 015 for 15. The value between 000 and 255
+|Format|Description|Details|
+|--|--|--|
+|`#TYYMMDDDwHHmmSS`|Setting time|`#T19052405180500`.  `Dw` - day of week, Monday - `01`, Sunday - `07`|
+|`#R`|I noticed that restart does not work if I do this just after sketch uploading. I have to do at least once manual reset for this function to work.|
+|`#BNNN`|Setting brightness|NNN - are 3 digits. Use 015 for 15. The value between 000 and 255|
+|`#KSNNN`|Sends current temperature from sensor|NNN - are 3 digits. Use 015 for 15. S - sign "-" or "+"|
+|`#CNNNMMM`|Sets temperature correlation parameters|NNN and MMM - are bytes B and K. Example `#C128098`|
 
 # Hardware
 As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
@@ -60,6 +53,9 @@ As controller I tested with Arduino Uno and Wemos D1/R1 (ESP8622 based)
 |R|R|Blue|D11|GPIO13|D7|
 
 [Connecting to ESP8266](http://forum.freetronics.com/viewtopic.php?t=6687)
+
+## BLE Shield
+ * [Library](https://github.com/RedBearLab/nRF8001)
 
 ## Other hardware
 ### [The 74HC595 Shift Register](https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/the-74hc595-shift-register)
