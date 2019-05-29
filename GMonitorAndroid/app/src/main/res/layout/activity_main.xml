@@ -46,9 +46,19 @@
 
     <TextView
         android:id="@+id/tvTemperature"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/sbBrightness"/>
+        app:layout_constraintTop_toBottomOf="@+id/sbBrightness"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+    <Button
+        android:id="@+id/buttonSendTemperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/send_temperature"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/tvTemperature"
+        app:layout_constraintTop_toTopOf="@+id/tvTemperature"/>
 
     <EditText
         android:id="@+id/etSend"
@@ -56,7 +66,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTemperature" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonSendTemperature" />
     <Button
         android:id="@+id/buttonSend"
         android:layout_width="match_parent"

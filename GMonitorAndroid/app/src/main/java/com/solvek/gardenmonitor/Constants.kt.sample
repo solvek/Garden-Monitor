@@ -1,0 +1,8 @@
+package com.solvek.gardenmonitor
+
+object Constants{
+    // Accuweather API key
+    val AW_API_KEY = "!!!PUT KEY HERE!!!"
+    // Accuweather location key. 324505 - Kyiv
+    val AW_LOCATION_ID = 324505
+}

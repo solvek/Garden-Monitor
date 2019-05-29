@@ -10,8 +10,14 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.SeekBar
 import android.widget.Toast
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.redbear.chat.RBLService
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.json.JSONArray
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -22,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private val mDeviceAddress = "F6:30:3E:A2:AF:0B"
 
     private val map = HashMap<UUID, BluetoothGattCharacteristic>()
+    private val db = FirebaseFirestore.getInstance()
+    private var temperatureSensor: Double? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         buttonSend.setOnClickListener{send()}
         buttonTime.setOnClickListener{setClock()}
         buttonRestart.setOnClickListener{restart()}
+        buttonSendTemperature.setOnClickListener{sendTemperature()}
         sbBrightness.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -100,8 +109,9 @@ class MainActivity : AppCompatActivity() {
         val data = String(byteArray)
         if (data.startsWith("#K")){
             try {
-                val temp = Integer.parseInt(data.substring(2, 6)) / 10.0
-                tvTemperature.text = "Temperature: $temp"
+                temperatureSensor = Integer.parseInt(data.substring(2, 6)) / 10.0
+                tvTemperature.text = "Temperature: $temperatureSensor"
+                buttonSendTemperature.isEnabled = true
             }
             catch(e: NumberFormatException){
                 Log.e(TAG, "Failed to parse temperature: $data")
@@ -169,6 +179,38 @@ class MainActivity : AppCompatActivity() {
         characteristic?.let {ch ->
             ch.value = tx
             mBluetoothLeService?.writeCharacteristic(ch)
+        }
+    }
+
+    private fun sendTemperature(){
+        if (null == temperatureSensor) {toast(R.string.need_temperature)}
+
+        doAsync{
+            temperatureSensor?.let {temperatureSensor ->
+                val result = URL("http://dataservice.accuweather.com/currentconditions/v1/" +
+                        "${Constants.AW_LOCATION_ID}" +
+                        "?apikey=${Constants.AW_API_KEY}")
+                    .readText()
+                val temperatureAw = JSONArray(result)
+                    .getJSONObject(0)
+                    .getJSONObject("Temperature")
+                    .getJSONObject("Metric")
+                    .getDouble("Value")
+
+                val record = HashMap<String, Any>()
+                record["temperature_sensor"] = temperatureSensor
+                record["temperature_aw"] = temperatureAw
+                record["time"] = Timestamp(Date())
+                db.collection("temperature")
+                    .add(record)
+                    .addOnSuccessListener {
+                        toast(R.string.temperature_added_to_server)
+                    }
+                    .addOnFailureListener{e->
+                        Log.e(TAG, "Failed to add temperature record", e)
+                        toast(R.string.temperature_server_failed)
+                    }
+            }
         }
     }
 
