@@ -11,10 +11,11 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.solvek.gardenmonitor.bl.CalibrateInteractor
 import kotlinx.coroutines.launch
 
 class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicationContext as Application){
-    private val calibrateInteractor = CalibrateInteractor(context)
+    private val calibrateInteractor = CalibrateInteractor(context, viewModelScope)
 
     var isInProgress: Boolean by mutableStateOf(false)
         private set
@@ -38,7 +39,7 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
                     logContent = logText
                 }
             }
-            calibrateInteractor.calibrate(this)
+            calibrateInteractor.calibrate()
             isInProgress = false
         }
     }

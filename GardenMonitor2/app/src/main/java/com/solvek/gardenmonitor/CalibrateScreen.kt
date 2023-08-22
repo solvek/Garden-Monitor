@@ -1,6 +1,7 @@
 package com.solvek.gardenmonitor
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +16,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CalibrateScreen(onCalibrate:()->Unit, isInProgress: Boolean, logContent: String) {
-    Column(Modifier.fillMaxWidth().padding(10.dp)) {
+    Column(Modifier.fillMaxSize().padding(10.dp)) {
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = onCalibrate,
