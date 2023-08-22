@@ -15,13 +15,13 @@ class CalibrateInteractor(private val context: Context) {
 
     private lateinit var peripheral: Peripheral
 
-    val isBluetoothEnabled: Boolean
-        get() = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.isEnabled
+    val isBluetoothDisabled: Boolean
+        get() = !(context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.isEnabled
 
     suspend fun calibrate(scope: CoroutineScope){
 //        peripheral.observe()
         log("Connecting")
-        peripheral = scope.peripheral(Config.address)
+        peripheral = scope.peripheral(Config.ADDRESS)
         peripheral.connect()
         log("Connected")
 

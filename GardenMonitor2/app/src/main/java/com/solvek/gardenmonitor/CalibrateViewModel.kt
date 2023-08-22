@@ -23,7 +23,7 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
     fun calibrate(){
         if (isInProgress) return
 
-        if (!calibrateInteractor.isBluetoothEnabled){
+        if (calibrateInteractor.isBluetoothDisabled){
             logContent = "Please enable bluetooth adapter"
             return
         }
