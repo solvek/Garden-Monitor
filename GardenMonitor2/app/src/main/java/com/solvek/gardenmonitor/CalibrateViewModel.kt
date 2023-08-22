@@ -21,6 +21,8 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
     var logContent: String by mutableStateOf("")
         private set
     fun calibrate(){
+        if (isInProgress) return
+
         viewModelScope.launch {
             isInProgress = true
             var logText = ""
