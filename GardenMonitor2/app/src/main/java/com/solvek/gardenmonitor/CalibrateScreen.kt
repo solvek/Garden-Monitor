@@ -14,12 +14,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.solvek.gardenmonitor.ui.theme.GardenMonitorTheme
 
 @Composable
-fun CalibrateScreen(onCalibrate:(()->Unit)?, logContent: String) {
+fun CalibrateScreen(onCalibrate:()->Unit, isInProgress: Boolean, logContent: String) {
     Column(Modifier.fillMaxWidth()) {
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = onCalibrate ?: {},
-            enabled = onCalibrate != null
+            onClick = onCalibrate,
+            enabled = !isInProgress
         ) {
             Text(text = stringResource(R.string.calibrate))
         }
@@ -33,10 +33,10 @@ fun CalibrateScreen(onCalibrate:(()->Unit)?, logContent: String) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CalibrateScreenPreview() {
-    GardenMonitorTheme {
-        CalibrateScreen(null, "some log")
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun CalibrateScreenPreview() {
+//    GardenMonitorTheme {
+//        CalibrateScreen(null, "some log")
+//    }
+//}
