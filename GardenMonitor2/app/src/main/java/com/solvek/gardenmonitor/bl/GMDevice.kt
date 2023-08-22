@@ -2,12 +2,30 @@ package com.solvek.gardenmonitor.bl
 
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class GMDevice(private val peripheral: Peripheral
 ) : Peripheral by peripheral {
-//    val sensorTemperature: Flow<Float>
+    val sensorTemperature = peripheral
+        .observe(CH_RX)
+        .map {
+            val t = String(it)
+            if (t.startsWith("#K")){
+                try {
+                    Integer.parseInt(t.substring(2, 6)) / 10.0f
+                }
+                catch(e: NumberFormatException){
+                    null
+                }
+            }
+            else {
+                null
+            }
+        }
+        .filterNotNull()
 
     suspend fun writeTime(timestamp: Long){
         writeToDevice("#T${TIME_FORMAT.format(timestamp)}")
@@ -34,5 +52,6 @@ class GMDevice(private val peripheral: Peripheral
 
         private const val SERVICE = "713d0000-503e-4c75-ba94-3148f18d941e"
         private val CH_TX = characteristicOf(SERVICE, "713d0003-503e-4c75-ba94-3148f18d941e")
+        private val CH_RX = characteristicOf(SERVICE, "713d0002-503e-4c75-ba94-3148f18d941e")
     }
 }
