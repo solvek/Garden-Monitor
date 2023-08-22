@@ -1,5 +1,7 @@
 package com.solvek.gardenmonitor
 
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
 import com.juul.kable.peripheral
@@ -8,10 +10,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class CalibrateInteractor {
+class CalibrateInteractor(private val context: Context) {
     val logMessage = MutableSharedFlow<String>()
 
     private lateinit var peripheral: Peripheral
+
+    val isBluetoothEnabled: Boolean
+        get() = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.isEnabled
 
     suspend fun calibrate(scope: CoroutineScope){
 //        peripheral.observe()

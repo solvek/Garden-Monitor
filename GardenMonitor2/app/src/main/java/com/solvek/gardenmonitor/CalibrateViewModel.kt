@@ -14,23 +14,27 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.launch
 
 class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicationContext as Application){
-    private val calibrateInteractor = CalibrateInteractor()
+    private val calibrateInteractor = CalibrateInteractor(context)
 
     var isInProgress: Boolean by mutableStateOf(false)
         private set
-    var logContent: String by mutableStateOf("")
+    var logContent: String by mutableStateOf("Ready")
         private set
     fun calibrate(){
         if (isInProgress) return
 
+        if (!calibrateInteractor.isBluetoothEnabled){
+            logContent = "Please enable bluetooth adapter"
+            return
+        }
+
         viewModelScope.launch {
             isInProgress = true
-            var logText = ""
+            var logText = "Started calibration"
             launch {
                 logContent = logText
                 calibrateInteractor.logMessage.collect {message ->
-                    if (logText.isNotBlank()) logText += "\n"
-                    logText += message
+                    logText += "\n$message"
                     logContent = logText
                 }
             }
