@@ -35,6 +35,7 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
             launch {
                 logContent = logText
                 calibrateInteractor.logMessage.collect {message ->
+//                    Log.d("ViewModel", "Log message: $message")
                     logText += "\n$message"
                     logContent = logText
                 }

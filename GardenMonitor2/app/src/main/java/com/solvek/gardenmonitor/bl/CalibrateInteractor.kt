@@ -26,7 +26,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     private val dbRepository = AppDatabase.create(context).getCalibrationDao()
     private val calibrator = TemperatureCalibrator()
 
-    private val errorHandler = CoroutineExceptionHandler { _, exception -> log(exception)}
+    private val errorHandler = CoroutineExceptionHandler { _, exception -> scope.launch{log(exception)}}
 
     val isBluetoothDisabled: Boolean
         get() = !(context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.isEnabled
@@ -78,12 +78,12 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
         log("All done")
     }
 
-    private fun log(th: Throwable){
+    private suspend fun log(th: Throwable){
         Log.e("GMProcess", "Calibrating error", th)
         log("Error: $th")
     }
 
-    private fun log(t: String){
-        _logMessage.tryEmit(t)
+    private suspend fun log(t: String){
+        _logMessage.emit(t)
     }
 }
