@@ -57,7 +57,10 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 
         calibrator.calibrate(currentPointsD.await(), newPoint)
 
-        val cleanDbJob = launch { dbRepository.cleanOldPoints(calibrator.timeToTrim) }
+        val updateDbJob = launch {
+            dbRepository.cleanOldPoints(calibrator.timeToTrim)
+            dbRepository.appendPoint(newPoint)
+        }
 
         if (calibrator.success)
             with(calibrator) {
@@ -71,7 +74,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
         log("Disconnecting")
         peripheral.disconnect()
 
-        cleanDbJob.join()
+        updateDbJob.join()
         log("All done")
     }
 
