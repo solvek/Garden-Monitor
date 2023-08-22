@@ -7,11 +7,11 @@ import androidx.room.Query
 @Dao
 interface CalibrationDao {
     @Query("SELECT * FROM Point")
-    fun getAllPoint(): List<Point>
+    suspend fun getAllPoints(): List<Point>
 
     @Query("DELETE FROM Point WHERE time < :time")
-    fun cleanOldPoints(time: Long)
+    suspend fun cleanOldPoints(time: Long)
 
     @Insert
-    fun appendPoint(point: Point)
+    suspend fun appendPoint(point: Point)
 }

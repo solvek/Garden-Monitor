@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase
     entities = [Point::class]
 )
 abstract class AppDatabase : RoomDatabase(){
-    abstract fun getStatisticDao(): CalibrationDao
+    abstract fun getCalibrationDao(): CalibrationDao
 
     companion object {
         fun create(context: Context) = Room.databaseBuilder(

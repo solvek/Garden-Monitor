@@ -31,9 +31,9 @@ class GMDevice(private val peripheral: Peripheral
         writeToDevice("#T${TIME_FORMAT.format(timestamp)}")
     }
 
-//    fun writeTemperatureCalibrationParameters(paramB: Byte, paramK: Byte){
-//
-//    }
+    suspend fun writeTemperatureCalibrationParameters(paramB: Byte, paramK: Byte){
+        writeToDevice("#C${paramB.pad}${paramK.pad}")
+    }
 
     private suspend fun writeToDevice(t: String){
         val b: Byte = 0x00
@@ -45,6 +45,9 @@ class GMDevice(private val peripheral: Peripheral
         }
         peripheral.write(CH_TX, tx)
     }
+
+    private val Byte.pad
+        get() = this.toString().padStart(3, '0')
 
     companion object {
         @Suppress("SpellCheckingInspection")
