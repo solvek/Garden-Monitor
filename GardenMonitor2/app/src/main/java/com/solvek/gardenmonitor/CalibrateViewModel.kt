@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.launch
 
 class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicationContext as Application){
-    private val calibrateInteractor = CalibrateInteractor(context)
+    private val calibrateInteractor = CalibrateInteractor()
 
     var isInProgress: Boolean by mutableStateOf(false)
         private set
@@ -24,8 +24,17 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
     fun calibrate(){
         viewModelScope.launch {
             isInProgress = true
-            logContent = ""
-
+            var logText = ""
+            launch {
+                logContent = logText
+                calibrateInteractor.logMessage.collect {message ->
+                    if (logText.isNotBlank()) logText += "\n"
+                    logText += message
+                    logContent = logText
+                }
+            }
+            calibrateInteractor.calibrate(this)
+            isInProgress = false
         }
     }
 
