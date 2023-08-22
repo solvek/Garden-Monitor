@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class CalibrateInteractor() {
+class CalibrateInteractor {
     val logMessage = MutableSharedFlow<String>()
 
     private lateinit var peripheral: Peripheral
@@ -52,7 +52,7 @@ class CalibrateInteractor() {
         @Suppress("SpellCheckingInspection")
         private val TIME_FORMAT = SimpleDateFormat("yyMMdduuHHmmss", Locale.US)
 
-        private val SERVICE = "713d0000-503e-4c75-ba94-3148f18d941e"
+        private const val SERVICE = "713d0000-503e-4c75-ba94-3148f18d941e"
         private val CH_TX = characteristicOf(SERVICE, "713d0003-503e-4c75-ba94-3148f18d941e")
     }
 }
