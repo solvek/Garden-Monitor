@@ -15,7 +15,7 @@ class GMDevice(private val peripheral: Peripheral
             val t = String(it)
             if (t.startsWith("#K")){
                 try {
-                    Integer.parseInt(t.substring(2, 6)) / 10.0f
+                    Integer.parseInt(t.substring(2, 6)) / 10.0
                 }
                 catch(e: NumberFormatException){
                     null
