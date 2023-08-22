@@ -7,7 +7,7 @@ import java.net.URL
 
 class AccuWeatherDataSource {
     suspend fun request(apiKey: String, location: Int) = withContext(Dispatchers.Default) {
-        val result = URL("http://dataservice.accuweather.com/currentconditions/v1/$location?apikey=$apiKey")
+        val result = URL("https://dataservice.accuweather.com/currentconditions/v1/$location?apikey=$apiKey")
             .readText()
         JSONArray(result)
             .getJSONObject(0)

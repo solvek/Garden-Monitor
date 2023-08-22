@@ -7,14 +7,11 @@ import com.juul.kable.peripheral
 import com.solvek.gardenmonitor.Config
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class CalibrateInteractor(private val context: Context, private val scope: CoroutineScope) {
     private val _logMessage = MutableStateFlow("")
@@ -53,11 +50,11 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     }
 
     private fun log(th: Throwable){
+        Log.e("GMProcess", "Calibrating error", th)
         log("Error: $th")
     }
 
     private fun log(t: String){
-        Log.d("GMProcess", t)
         _logMessage.tryEmit(t)
     }
 }
