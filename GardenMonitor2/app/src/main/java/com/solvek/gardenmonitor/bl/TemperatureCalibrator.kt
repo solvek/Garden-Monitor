@@ -62,8 +62,8 @@ class TemperatureCalibrator {
 
     companion object {
         private const val G1 = 1.0/256
-        private const val P1 = -10
-        private const val Q1 = 10
+        private const val P1 = -100
+        private const val Q1 = 100
         private val T1 = tanh(127*G1)
         private val N1 = (Q1-P1)/(T1 - tanh(-128*G1))
         private val M1 = Q1 - N1*T1
