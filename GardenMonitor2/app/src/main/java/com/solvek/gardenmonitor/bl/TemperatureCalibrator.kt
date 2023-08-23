@@ -12,10 +12,10 @@ class TemperatureCalibrator {
     var success = false
         private set
 
-    var paramB:Byte = 0
+    var paramB:Int = 0
         private set
 
-    var paramK:Byte = 0
+    var paramK:Int = 0
         private set
 
     var x1:Double = 0.0
@@ -56,8 +56,8 @@ class TemperatureCalibrator {
         k = (y2-y1)/(x2-x1)
         b = y1 - k*x1
 
-        paramB = ((atanh((b-M1)/N1))/G1+128).roundToInt().toByte()
-        paramK = ((atanh((log(k, 2.0) -M2)/N2))/G2+128).roundToInt().toByte()
+        paramB = ((atanh((b-M1)/N1))/G1+128).roundToInt()
+        paramK = ((atanh((log(k, 2.0) -M2)/N2))/G2+128).roundToInt()
 
         success = true
     }
