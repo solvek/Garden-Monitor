@@ -39,7 +39,9 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
         log("Calibrating time")
         gmDevice.writeTime(System.currentTimeMillis())
 
-        val sensorTemperature = gmDevice.sensorTemperature.first()
+        val sensorTemperature = gmDevice.readSensorTemperature()
+        gmDevice.sensorTemperature.first()
+//        val sensorTemperature = 25.5
         log("Sensor temperature: $sensorTemperature")
 
         val realTemperature = realTemperatureD.await()
@@ -55,6 +57,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
         val updateDbJob = launch {
             dbRepository.cleanOldPoints(calibrator.timeToTrim)
             dbRepository.appendPoint(newPoint)
+            log("Local db updated")
         }
 
         if (calibrator.success)

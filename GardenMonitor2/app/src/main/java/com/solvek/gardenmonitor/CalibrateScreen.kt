@@ -18,17 +18,17 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CalibrateScreen(model: CalibrateViewModel) {
-    val isInProgress by model.isInProgress.collectAsState()
+    val isReady by model.isReady.collectAsState()
     val logContent by model.logContent.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(10.dp)) {
-        if (!isInProgress) {
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = model::calibrate
-            ) {
-                Text(text = stringResource(R.string.calibrate))
-            }
+        Text("Is ready: $isReady")
+        Button(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onClick = model::calibrate,
+            enabled = isReady
+        ) {
+            Text(text = stringResource(R.string.calibrate))
         }
         Text(
             text = logContent,

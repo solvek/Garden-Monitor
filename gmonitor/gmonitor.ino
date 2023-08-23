@@ -44,8 +44,8 @@ DS3231 Clock;
 double v = tanh(23.535);
 
 #define G1 (1.0/256)
-#define P1 (-10)
-#define Q1 10
+#define P1 (-100)
+#define Q1 100
 double t1 = tanh(127*G1);
 double n1 = (Q1-P1)/(t1 - tanh(-128*G1));
 double m1 = Q1 - n1*t1;

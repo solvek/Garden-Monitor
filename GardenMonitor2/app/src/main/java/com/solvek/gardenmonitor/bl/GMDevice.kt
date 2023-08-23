@@ -3,8 +3,11 @@ package com.solvek.gardenmonitor.bl
 import android.util.Log
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -34,6 +37,23 @@ class GMDevice(private val peripheral: Peripheral
 
     suspend fun writeTemperatureCalibrationParameters(paramB: Byte, paramK: Byte){
         writeToDevice("#C${paramB.pad}${paramK.pad}")
+    }
+
+    suspend fun readSensorTemperature(): Double {
+        var res: Double = -1.0
+
+        val job = coroutineScope {
+            launch {
+                sensorTemperature.collect { st ->
+                    Log.d("ST", "Sensor temperature: $st")
+                    res = st
+                    cancel()
+                }
+            }
+        }
+
+        job.join()
+        return res
     }
 
     private suspend fun writeToDevice(t: String){

@@ -46,7 +46,7 @@ class TemperatureCalibrator {
         x1 = orderedPoints[0].sensorTemperature
         y1 = orderedPoints[0].realTemperature
 
-        val prev = orderedPoints.drop(0).firstOrNull {
+        val prev = orderedPoints.drop(1).firstOrNull {
             abs(it.sensorTemperature - x1) >= 3
         } ?: return
 
@@ -58,12 +58,14 @@ class TemperatureCalibrator {
 
         paramB = ((atanh((b-M1)/N1))/G1+128).roundToInt().toByte()
         paramK = ((atanh((log(k, 2.0) -M2)/N2))/G2+128).roundToInt().toByte()
+
+        success = true
     }
 
     companion object {
         private const val G1 = 1.0/256
-        private const val P1 = -100
-        private const val Q1 = 100
+        private const val P1 = -10
+        private const val Q1 = 10
         private val T1 = tanh(127*G1)
         private val N1 = (Q1-P1)/(T1 - tanh(-128*G1))
         private val M1 = Q1 - N1*T1
