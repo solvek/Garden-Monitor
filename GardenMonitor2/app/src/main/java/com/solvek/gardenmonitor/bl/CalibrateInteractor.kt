@@ -10,15 +10,10 @@ import com.solvek.gardenmonitor.bl.db.Point
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class CalibrateInteractor(private val context: Context, private val scope: CoroutineScope) {
-    private val _logMessage = MutableStateFlow("")
-    val logMessage: StateFlow<String> = _logMessage
-
+class CalibrateInteractor(private val context: Context, private val scope: CoroutineScope, private val logger: (String) -> Unit) {
     private val peripheral = scope.peripheral(Config.ADDRESS)
 
     private val gmDevice = GMDevice(peripheral)
@@ -85,6 +80,6 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 
     private fun log(t: String){
         Log.d("Log", t)
-        _logMessage.value = t
+        logger(t)
     }
 }

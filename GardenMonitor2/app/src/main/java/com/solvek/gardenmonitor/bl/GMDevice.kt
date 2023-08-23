@@ -1,5 +1,6 @@
 package com.solvek.gardenmonitor.bl
 
+import android.util.Log
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
 import kotlinx.coroutines.flow.filterNotNull
@@ -43,6 +44,7 @@ class GMDevice(private val peripheral: Peripheral
         for (i in 1 until tmp.size + 1) {
             tx[i] = tmp[i - 1]
         }
+        Log.d("GMDevice", "Writing such data to device: $t")
         peripheral.write(CH_TX, tx)
     }
 

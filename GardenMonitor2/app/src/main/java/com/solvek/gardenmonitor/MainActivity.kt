@@ -27,7 +27,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CalibrateScreen(viewModel::calibrate, viewModel.isInProgress, viewModel.logContent)
+
+                    CalibrateScreen(viewModel)
                 }
             }
         }

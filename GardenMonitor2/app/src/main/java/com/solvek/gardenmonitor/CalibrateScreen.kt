@@ -9,17 +9,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CalibrateScreen(onCalibrate:()->Unit, isInProgress: Boolean, logContent: String) {
+fun CalibrateScreen(model: CalibrateViewModel) {
+    val isInProgress by model.isInProgress.collectAsState()
+    val logContent by model.logContent.collectAsState()
+
     Column(Modifier.fillMaxSize().padding(10.dp)) {
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = onCalibrate,
+            onClick = model::calibrate,
             enabled = !isInProgress
         ) {
             Text(text = stringResource(R.string.calibrate))
