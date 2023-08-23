@@ -30,6 +30,12 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
 
     private var logText = ""
     fun calibrate(){
+//        _isReady.value = false
+//        viewModelScope.launch {
+//            delay()
+//            _isReady.value = true
+//        }
+
         if (!_isReady.value) return
 
         if (calibrateInteractor.isBluetoothDisabled){
@@ -38,7 +44,6 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
         }
 
         _isReady.value = false
-
         Log.d("ViewModel", "New is ready value: ${isReady.value} (backed property ${_isReady.value})")
 
         viewModelScope.launch {
@@ -48,6 +53,10 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
             _isReady.value = true
         }
     }
+
+//    private suspend fun delay(){
+//        delay(3.seconds)
+//    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

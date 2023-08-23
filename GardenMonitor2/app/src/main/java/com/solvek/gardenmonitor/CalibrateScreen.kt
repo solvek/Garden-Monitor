@@ -22,7 +22,6 @@ fun CalibrateScreen(model: CalibrateViewModel) {
     val logContent by model.logContent.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(10.dp)) {
-        Text("Is ready: $isReady")
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = model::calibrate,

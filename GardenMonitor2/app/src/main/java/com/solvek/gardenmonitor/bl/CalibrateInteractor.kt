@@ -26,54 +26,56 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     val isBluetoothDisabled: Boolean
         get() = !(context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter.isEnabled
 
-    suspend fun calibrate() = scope.launch(errorHandler){
-        log("Connecting")
-        peripheral.connect()
+    suspend fun calibrate() {
+        scope.launch(errorHandler) {
+            log("Connecting")
+            peripheral.connect()
 
-        log("Connected")
+            log("Connected")
 
-        log("Reading temperature from web")
-        val realTemperatureD = async { accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID) }
-        val currentPointsD = async {dbRepository.getAllPoints()}
+            log("Reading temperature from web")
+            val realTemperatureD = async { accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID) }
+            val currentPointsD = async {dbRepository.getAllPoints()}
 
-        log("Calibrating time")
-        gmDevice.writeTime(System.currentTimeMillis())
+            log("Calibrating time")
+            gmDevice.writeTime(System.currentTimeMillis())
 
-        val sensorTemperature = gmDevice.readSensorTemperature()
-        gmDevice.sensorTemperature.first()
-//        val sensorTemperature = 25.5
-        log("Sensor temperature: $sensorTemperature")
+            val sensorTemperature = gmDevice.readSensorTemperature()
+            gmDevice.sensorTemperature.first()
+    //        val sensorTemperature = 25.5
+            log("Sensor temperature: $sensorTemperature")
 
-        val realTemperature = realTemperatureD.await()
-        log("Real temperature: $realTemperature")
+            val realTemperature = realTemperatureD.await()
+            log("Real temperature: $realTemperature")
 
-        val newPoint = Point(
-            sensorTemperature = sensorTemperature,
-            realTemperature = realTemperature
-        )
+            val newPoint = Point(
+                sensorTemperature = sensorTemperature,
+                realTemperature = realTemperature
+            )
 
-        calibrator.calibrate(currentPointsD.await(), newPoint)
+            calibrator.calibrate(currentPointsD.await(), newPoint)
 
-        val updateDbJob = launch {
-            dbRepository.cleanOldPoints(calibrator.timeToTrim)
-            dbRepository.appendPoint(newPoint)
-            log("Local db updated")
-        }
-
-        if (calibrator.success)
-            with(calibrator) {
-                log("Temperature calibration parameters: x1=$x1, y1=$y1, x2=$x2, y2=$y2, k=$k, b=$b, paramK=$paramK, paramB=$paramB")
-                gmDevice.writeTemperatureCalibrationParameters(paramB, paramK)
+            val updateDbJob = launch {
+                dbRepository.cleanOldPoints(calibrator.timeToTrim)
+                dbRepository.appendPoint(newPoint)
+                log("Local db updated")
             }
-        else {
-           log("Not found points to calibrate temperature yet")
-        }
 
-        log("Disconnecting")
-        peripheral.disconnect()
+            if (calibrator.success)
+                with(calibrator) {
+                    log("Temperature calibration parameters: x1=$x1, y1=$y1, x2=$x2, y2=$y2, k=$k, b=$b, paramK=$paramK, paramB=$paramB")
+                    gmDevice.writeTemperatureCalibrationParameters(paramB, paramK)
+                }
+            else {
+               log("Not found points to calibrate temperature yet")
+            }
 
-        updateDbJob.join()
-        log("All done")
+            log("Disconnecting")
+            peripheral.disconnect()
+
+            updateDbJob.join()
+            log("All done")
+        }.join()
     }
 
     private fun log(th: Throwable){
