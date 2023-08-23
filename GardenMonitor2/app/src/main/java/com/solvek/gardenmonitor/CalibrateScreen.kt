@@ -22,12 +22,13 @@ fun CalibrateScreen(model: CalibrateViewModel) {
     val logContent by model.logContent.collectAsState()
 
     Column(Modifier.fillMaxSize().padding(10.dp)) {
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = model::calibrate,
-            enabled = !isInProgress
-        ) {
-            Text(text = stringResource(R.string.calibrate))
+        if (!isInProgress) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = model::calibrate
+            ) {
+                Text(text = stringResource(R.string.calibrate))
+            }
         }
         Text(
             text = logContent,
