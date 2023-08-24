@@ -15,6 +15,7 @@ import com.solvek.gardenmonitor.bl.db.AppDatabase
 import com.solvek.gardenmonitor.bl.db.Point
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -45,9 +46,6 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             val realTemperatureD = async { accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID) }
             val currentPointsD = async {dbRepository.getAllPoints()}
 
-            log("Calibrating time")
-            gmDevice.writeTime(System.currentTimeMillis())
-
             val sensorTemperature = gmDevice.readSensorTemperature()
             gmDevice.sensorTemperature.first()
     //        val sensorTemperature = 25.5
@@ -61,11 +59,10 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 realTemperature = realTemperature
             )
 
-            val addToSheetsJob = launch {
+            val addToSheetsJob = launch(Dispatchers.IO) {
+                log("Uploading record to google sheet")
                 sheets.upload(newPoint)
             }
-
-            calibrator.calibrate(currentPointsD.await(), newPoint)
 
             val updateDbJob = launch {
                 dbRepository.cleanOldPoints(calibrator.timeToTrim)
@@ -73,13 +70,18 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 log("Local db updated")
             }
 
-            if (calibrator.success)
+            log("Calibrating time")
+            gmDevice.writeTime(System.currentTimeMillis())
+
+            val calibrationResult = calibrator.calibrate(currentPointsD.await(), newPoint)
+
+            if (calibrationResult == TemperatureCalibrator.Result.SUCCESS)
                 with(calibrator) {
                     log("Temperature calibration parameters: x1=$x1, y1=$y1, x2=$x2, y2=$y2, k=$k, b=$b, paramK=$paramK, paramB=$paramB")
                     gmDevice.writeTemperatureCalibrationParameters(paramB, paramK)
                 }
             else {
-               log("Not found points to calibrate temperature yet")
+               log("Temperature calibration failed: $calibrationResult")
             }
 
             log("Disconnecting")
@@ -107,12 +109,16 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     }
 
     private fun log(th: Throwable){
-        Timber.tag("GMProcess").e(th, "Calibrating error")
+        Timber.tag(TAG).e(th, "Calibrating error")
         log("Error: $th")
     }
 
     private fun log(t: String){
         Timber.tag("Log").d(t)
         logger(t)
+    }
+
+    companion object {
+        private const val TAG = "CalibrateInteractor"
     }
 }

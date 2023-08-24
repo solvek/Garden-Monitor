@@ -10,9 +10,6 @@ import kotlin.math.roundToInt
 import kotlin.math.tanh
 
 class TemperatureCalibrator {
-    var success = false
-        private set
-
     var paramB:Int = 0
         private set
 
@@ -34,22 +31,21 @@ class TemperatureCalibrator {
 
     var timeToTrim: Long = 0
         private set
-    fun calibrate(points: List<Point>, newPoint: Point){
-        success = false
+    fun calibrate(points: List<Point>, newPoint: Point): Result{
         val orderedPoints = points.plus(newPoint).sortedByDescending { it.time }
 
         timeToTrim = if (orderedPoints.size > Config.KEEP_POINT_IN_DB)
             orderedPoints[Config.KEEP_POINT_IN_DB-1].time
             else 0
 
-        if (orderedPoints.size < 2) return
+        if (orderedPoints.size < 2) return Result.TOO_LITTLE_DATA
 
         x1 = orderedPoints[0].sensorTemperature
         y1 = orderedPoints[0].realTemperature
 
         val prev = orderedPoints.drop(1).firstOrNull {
             abs(it.sensorTemperature - x1) >= 3
-        } ?: return
+        } ?: return Result.NO_DIFF_RECORD
 
         x2 = prev.sensorTemperature
         y2 = prev.realTemperature
@@ -63,11 +59,17 @@ class TemperatureCalibrator {
         }
         catch (th: Throwable){
             Timber.tag(TAG).e(th, "Couldn't calculate paramB and/or parmaK")
-            success = false
-            return
+            return Result.PARAMS_CALC_FAILED
         }
 
-        success = true
+        return Result.SUCCESS
+    }
+
+    enum class Result {
+        SUCCESS,
+        NO_DIFF_RECORD,
+        TOO_LITTLE_DATA,
+        PARAMS_CALC_FAILED
     }
 
     companion object {
