@@ -61,8 +61,9 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 //            }
             val appendDataset = launch(Dispatchers.IO) {
                 log("Uploading record to dataset")
-                val ref = dataset.upload(newPoint)
-                log("Point added to dataset: $ref")
+                dataset.upload(newPoint)
+                log("Point added to dataset")
+//                log("Point added to dataset: $ref")
             }
 
             val updateDbJob = launch {

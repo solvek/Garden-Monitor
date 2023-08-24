@@ -45,7 +45,7 @@ class FirestoreDataSource(context: Context) {
         job.join()
 
         if (ex != null) throw ex as Exception
-        ref!!
+        ref
     }
 
     companion object {
