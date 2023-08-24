@@ -1,8 +1,8 @@
 package com.solvek.gardenmonitor.bl
 
-import android.util.Log
 import com.solvek.gardenmonitor.Config
 import com.solvek.gardenmonitor.bl.db.Point
+import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.atanh
 import kotlin.math.log
@@ -62,8 +62,9 @@ class TemperatureCalibrator {
             paramK = ((atanh((log(k, 2.0) - M2) / N2)) / G2 + 128).roundToInt()
         }
         catch (th: Throwable){
-            Log.e(TAG, "Couldn't calculate paramB and/or parmaK", th)
+            Timber.tag(TAG).e(th, "Couldn't calculate paramB and/or parmaK")
             success = false
+            return
         }
 
         success = true
