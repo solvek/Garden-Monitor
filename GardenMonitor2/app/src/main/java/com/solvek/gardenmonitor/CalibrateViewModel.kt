@@ -1,8 +1,8 @@
 package com.solvek.gardenmonitor
 
+import android.accounts.Account
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicationContext as Application){
     private val calibrateInteractor = CalibrateInteractor(context, viewModelScope){message ->
@@ -44,7 +45,8 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
         }
 
         _isReady.value = false
-        Log.d("ViewModel", "New is ready value: ${isReady.value} (backed property ${_isReady.value})")
+        Timber.tag(TAG)
+            .d("New is ready value: ${isReady.value} + (backed property: ${_isReady.value})")
 
         viewModelScope.launch {
             logText = "Started calibration"
@@ -54,11 +56,13 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
         }
     }
 
-//    private suspend fun delay(){
-//        delay(3.seconds)
-//    }
+    fun setGoogleAccount(account: Account) {
+       calibrateInteractor.setGoogleAccount(account)
+    }
 
     companion object {
+        private const val TAG = "ViewModel"
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
 //                val savedStateHandle = createSavedStateHandle()

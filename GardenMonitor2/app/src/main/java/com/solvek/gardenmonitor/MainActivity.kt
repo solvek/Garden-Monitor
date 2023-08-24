@@ -1,5 +1,6 @@
 package com.solvek.gardenmonitor
 
+import android.accounts.Account
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
@@ -16,10 +17,7 @@ import androidx.compose.ui.Modifier
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.json.gson.GsonFactory
 import com.solvek.gardenmonitor.ui.theme.GardenMonitorTheme
 import timber.log.Timber
 
@@ -91,41 +89,26 @@ class MainActivity : ComponentActivity() {
                 return@registerForActivityResult
             }
             try {
-                val credential = oneTapClient.getSignInCredentialFromIntent(it.data)
-                val idToken = credential.googleIdToken
-                val username = credential.id
-                val password = credential.password
-                if (idToken != null) {
-                    // Got an ID token from Google. Use it to authenticate
-                    // with your backend.
-                    Timber.tag(TAG).d("Got ID token.")
-                } else if (password != null) {
-                    // Got a saved username and password. Use them to authenticate
-                    // with your backend.
-                    Timber.tag(TAG).d("Got password.")
-                }
+                val googleCredential = oneTapClient.getSignInCredentialFromIntent(it.data)
+                val account = Account(googleCredential.id, packageName)
+                viewModel.setGoogleAccount(account)
+
+//                val idToken = googleCredential.googleIdToken
+//                val username = credential.id
+//                val password = credential.password
+//                if (idToken != null) {
+//                    // Got an ID token from Google. Use it to authenticate
+//                    // with your backend.
+//                    Timber.tag(TAG).d("Got ID token.")
+//                } else if (password != null) {
+//                    // Got a saved username and password. Use them to authenticate
+//                    // with your backend.
+//                    Timber.tag(TAG).d("Got password.")
+//                }
             } catch (e: ApiException) {
                 Timber.tag(TAG).e(e, "Cannot get credentials")
             }
         }
-
-    private fun initGoogleServices(account: GoogleSignInAccount) {
-        val jsonFactory = GsonFactory.getDefaultInstance()
-        // GoogleNetHttpTransport.newTrustedTransport()
-        val httpTransport =  AndroidHttp.newCompatibleTransport()
-//        val service = Sheets.Builder(httpTransport, jsonFactory, credential)
-//            .setApplicationName(getString(R.string.app_name))
-//            .build()
-    //                    val scopes = listOf(SheetsScopes.SPREADSHEETS)
-//                    val credential = GoogleAccountCredential.usingOAuth2(this, scopes)
-//                    credential.selectedAccount = account.account
-//                    val jsonFactory = JacksonFactory.getDefaultInstance()
-//                    // GoogleNetHttpTransport.newTrustedTransport()
-//                    val httpTransport =  AndroidHttp.newCompatibleTransport()
-//                    val service = Sheets.Builder(httpTransport, jsonFactory, credential)
-//                        .setApplicationName(getString(R.string.app_name))
-//                        .build()
-    }
 
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {

@@ -1,10 +1,16 @@
 package com.solvek.gardenmonitor.bl
 
+import android.accounts.Account
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.sheets.v4.Sheets
+import com.google.api.services.sheets.v4.SheetsScopes
 import com.juul.kable.peripheral
 import com.solvek.gardenmonitor.Config
+import com.solvek.gardenmonitor.R
 import com.solvek.gardenmonitor.bl.db.AppDatabase
 import com.solvek.gardenmonitor.bl.db.Point
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -12,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class CalibrateInteractor(private val context: Context, private val scope: CoroutineScope, private val logger: (String) -> Unit) {
     private val peripheral = scope.peripheral(Config.ADDRESS)
@@ -20,6 +27,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     private val accuWeatherDataSource = AccuWeatherDataSource()
     private val dbRepository = AppDatabase.create(context).getCalibrationDao()
     private val calibrator = TemperatureCalibrator()
+    private val sheets = SheetsDataSource()
 
     private val errorHandler = CoroutineExceptionHandler { _, exception -> log(exception)}
 
@@ -53,6 +61,10 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 realTemperature = realTemperature
             )
 
+            val addToSheetsJob = launch {
+                sheets.upload(newPoint)
+            }
+
             calibrator.calibrate(currentPointsD.await(), newPoint)
 
             val updateDbJob = launch {
@@ -74,17 +86,33 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             peripheral.disconnect()
 
             updateDbJob.join()
+            addToSheetsJob.join()
             log("All done")
         }.join()
     }
 
+    fun setGoogleAccount(account: Account) {
+        val jsonFactory = GsonFactory.getDefaultInstance()
+        // GoogleNetHttpTransport.newTrustedTransport()
+        val httpTransport =  AndroidHttp.newCompatibleTransport()
+
+        val scopes = listOf(SheetsScopes.SPREADSHEETS)
+        val credential = GoogleAccountCredential.usingOAuth2(context, scopes)
+        credential.selectedAccount = account
+
+        val appName = context.getString(R.string.app_name)
+        sheets.service = Sheets.Builder(httpTransport, jsonFactory, credential)
+            .setApplicationName(appName)
+            .build()
+    }
+
     private fun log(th: Throwable){
-        Log.e("GMProcess", "Calibrating error", th)
+        Timber.tag("GMProcess").e(th, "Calibrating error")
         log("Error: $th")
     }
 
     private fun log(t: String){
-        Log.d("Log", t)
+        Timber.tag("Log").d(t)
         logger(t)
     }
 }
