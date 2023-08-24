@@ -80,6 +80,18 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
 
+    // Google Sheets
+    implementation("com.google.android.gms:play-services-auth:20.6.0")
+//    implementation("com.google.api-client:google-api-client-android:1.23.0") {
+//        exclude(group="org.apache.httpcomponents")
+//    }
+//    implementation("com.google.apis:google-api-services-sheets:v4-rev571-1.25.0") {
+//        exclude(group="org.apache.httpcomponents")
+//    }
+
+    // Timber
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
