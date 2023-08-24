@@ -86,9 +86,10 @@ dependencies {
         exclude(group="org.apache.httpcomponents")
         exclude(module="guava-jdk5")
     }
-//    implementation("com.google.apis:google-api-services-sheets:v4-rev571-1.25.0") {
-//        exclude(group="org.apache.httpcomponents")
-//    }
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20230227-2.0.0")
+    {
+        exclude(group="org.apache.httpcomponents")
+    }
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")

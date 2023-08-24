@@ -18,6 +18,8 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.json.gson.GsonFactory
 import com.solvek.gardenmonitor.ui.theme.GardenMonitorTheme
 import timber.log.Timber
 
@@ -108,6 +110,12 @@ class MainActivity : ComponentActivity() {
         }
 
     private fun initGoogleServices(account: GoogleSignInAccount) {
+        val jsonFactory = GsonFactory.getDefaultInstance()
+        // GoogleNetHttpTransport.newTrustedTransport()
+        val httpTransport =  AndroidHttp.newCompatibleTransport()
+//        val service = Sheets.Builder(httpTransport, jsonFactory, credential)
+//            .setApplicationName(getString(R.string.app_name))
+//            .build()
     //                    val scopes = listOf(SheetsScopes.SPREADSHEETS)
 //                    val credential = GoogleAccountCredential.usingOAuth2(this, scopes)
 //                    credential.selectedAccount = account.account
