@@ -82,9 +82,10 @@ dependencies {
 
     // Google Sheets
     implementation("com.google.android.gms:play-services-auth:20.6.0")
-//    implementation("com.google.api-client:google-api-client-android:1.23.0") {
-//        exclude(group="org.apache.httpcomponents")
-//    }
+    implementation("com.google.api-client:google-api-client-android:1.23.0") {
+        exclude(group="org.apache.httpcomponents")
+        exclude(module="guava-jdk5")
+    }
 //    implementation("com.google.apis:google-api-services-sheets:v4-rev571-1.25.0") {
 //        exclude(group="org.apache.httpcomponents")
 //    }
