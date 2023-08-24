@@ -59,10 +59,10 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 realTemperature = realTemperature
             )
 
-            val addToSheetsJob = launch(Dispatchers.IO) {
-                log("Uploading record to google sheet")
-                sheets.upload(newPoint)
-            }
+//            val appendDataset = launch(Dispatchers.IO) {
+//                log("Uploading record to google sheet")
+//                sheets.upload(newPoint)
+//            }
 
             val updateDbJob = launch {
                 dbRepository.cleanOldPoints(calibrator.timeToTrim)
@@ -88,7 +88,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             peripheral.disconnect()
 
             updateDbJob.join()
-            addToSheetsJob.join()
+//            appendDataset.join()
             log("All done")
         }.join()
     }

@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
-        requestGoogleAuth()
+//        requestGoogleAuth()
         setContent {
             GardenMonitorTheme {
                 // A surface container using the 'background' color from the theme
