@@ -6,25 +6,32 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.Scope
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
 import com.solvek.gardenmonitor.ui.theme.GardenMonitorTheme
 import timber.log.Timber
+
 
 class MainActivity : ComponentActivity() {
     private val viewModel: CalibrateViewModel by viewModels { CalibrateViewModel.Factory }
 
+    private lateinit var oneTapClient: SignInClient
+    private lateinit var signInRequest: BeginSignInRequest
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
-        requestSignIn()
+        requestGoogleAuth()
         setContent {
             GardenMonitorTheme {
                 // A surface container using the 'background' color from the theme
@@ -39,16 +46,69 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun requestGoogleAuth() {
+        oneTapClient = Identity.getSignInClient(this)
+        signInRequest = BeginSignInRequest.builder()
+            .setPasswordRequestOptions(
+                BeginSignInRequest.PasswordRequestOptions.builder()
+                    .setSupported(true)
+                    .build()
+            )
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    // Your server's client ID, not your Android client ID.
+                    .setServerClientId(Config.GOOGLE_SERVER_CLIENT_ID)
+                    // Only show accounts previously used to sign in.
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            // Automatically sign in when exactly one credential is retrieved.
+            .setAutoSelectEnabled(true)
+            .build()
+
+        oneTapClient.beginSignIn(signInRequest)
+            .addOnSuccessListener(
+                this
+            ) { result ->
+                val intentSenderRequest = IntentSenderRequest
+                    .Builder(result.pendingIntent)
+                    .build()
+                signInHandler.launch(intentSenderRequest)
+            }
+            .addOnFailureListener(this) { e -> // No saved credentials found. Launch the One Tap sign-up flow, or
+                // do nothing and continue presenting the signed-out UI.
+                Timber.tag(TAG).d(e.localizedMessage)
+            }
+    }
+
     private val signInHandler =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()) {
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             if (it.resultCode != Activity.RESULT_OK) {
                 Timber.tag(TAG).e("User cancelled sign in")
                 return@registerForActivityResult
             }
-            GoogleSignIn.getSignedInAccountFromIntent(it.data)
-                .addOnSuccessListener { account ->
-//                    val scopes = listOf(SheetsScopes.SPREADSHEETS)
+            try {
+                val credential = oneTapClient.getSignInCredentialFromIntent(it.data)
+                val idToken = credential.googleIdToken
+                val username = credential.id
+                val password = credential.password
+                if (idToken != null) {
+                    // Got an ID token from Google. Use it to authenticate
+                    // with your backend.
+                    Timber.tag(TAG).d("Got ID token.")
+                } else if (password != null) {
+                    // Got a saved username and password. Use them to authenticate
+                    // with your backend.
+                    Timber.tag(TAG).d("Got password.")
+                }
+            } catch (e: ApiException) {
+                Timber.tag(TAG).e(e, "Cannot get credentials")
+            }
+        }
+
+    private fun initGoogleServices(account: GoogleSignInAccount) {
+    //                    val scopes = listOf(SheetsScopes.SPREADSHEETS)
 //                    val credential = GoogleAccountCredential.usingOAuth2(this, scopes)
 //                    credential.selectedAccount = account.account
 //                    val jsonFactory = JacksonFactory.getDefaultInstance()
@@ -57,28 +117,7 @@ class MainActivity : ComponentActivity() {
 //                    val service = Sheets.Builder(httpTransport, jsonFactory, credential)
 //                        .setApplicationName(getString(R.string.app_name))
 //                        .build()
-                }
-                .addOnFailureListener { e ->
-                    Timber.tag(TAG).e(e, "Failed to get sign in information")
-                }
-        }
-
-    private fun requestSignIn() {
-        /*
-        GoogleSignIn.getLastSignedInAccount(context)?.also { account ->
-            Timber.d("account=${account.displayName}")
-        }
-         */
-        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            // .requestEmail()
-            // .requestScopes(Scope(SheetsScopes.SPREADSHEETS_READONLY))
-//            .requestScopes(Scope(SheetsScopes.SPREADSHEETS))
-            .requestScopes(Scope("https://www.googleapis.com/auth/spreadsheets"))
-            .build()
-        val client = GoogleSignIn.getClient(this, signInOptions)
-        signInHandler.launch(client.signInIntent)
     }
-
 
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
