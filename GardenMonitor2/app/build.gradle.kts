@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -90,6 +91,10 @@ dependencies {
     {
         exclude(group="org.apache.httpcomponents")
     }
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")

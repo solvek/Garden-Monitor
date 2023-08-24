@@ -1,6 +1,5 @@
 package com.solvek.gardenmonitor
 
-import android.accounts.Account
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
@@ -9,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.FirebaseApp
 import com.solvek.gardenmonitor.bl.CalibrateInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +30,7 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
     val logContent: StateFlow<String> = _logContent.asStateFlow()
 
     private var logText = ""
+
     fun calibrate(){
 //        _isReady.value = false
 //        viewModelScope.launch {
@@ -56,9 +57,9 @@ class CalibrateViewModel(context: Context) : AndroidViewModel(context.applicatio
         }
     }
 
-    fun setGoogleAccount(account: Account) {
-       calibrateInteractor.setGoogleAccount(account)
-    }
+//    fun setGoogleAccount(account: Account) {
+//       calibrateInteractor.setGoogleAccount(account)
+//    }
 
     companion object {
         private const val TAG = "ViewModel"

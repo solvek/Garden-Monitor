@@ -8,6 +8,7 @@ import com.solvek.gardenmonitor.bl.db.AppDatabase
 import com.solvek.gardenmonitor.bl.db.Point
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -21,6 +22,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
     private val dbRepository = AppDatabase.create(context).getCalibrationDao()
     private val calibrator = TemperatureCalibrator()
 //    private val sheets = SheetsDataSource()
+    private val dataset = FirestoreDataSource(context)
 
     private val errorHandler = CoroutineExceptionHandler { _, exception -> log(exception)}
 
@@ -34,8 +36,10 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 
             log("Connected")
 
-            log("Reading temperature from web")
-            val realTemperatureD = async { accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID) }
+            val realTemperatureD = async {
+                log("Reading temperature from web")
+                accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID)
+            }
             val currentPointsD = async {dbRepository.getAllPoints()}
 
             val sensorTemperature = gmDevice.readSensorTemperature()
@@ -55,6 +59,11 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 //                log("Uploading record to google sheet")
 //                sheets.upload(newPoint)
 //            }
+            val appendDataset = launch(Dispatchers.IO) {
+                log("Uploading record to dataset")
+                val ref = dataset.upload(newPoint)
+                log("Point added to dataset: $ref")
+            }
 
             val updateDbJob = launch {
                 dbRepository.cleanOldPoints(calibrator.timeToTrim)
@@ -80,7 +89,7 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             peripheral.disconnect()
 
             updateDbJob.join()
-//            appendDataset.join()
+            appendDataset.join()
             log("All done")
         }.join()
     }
