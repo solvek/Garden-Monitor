@@ -1,5 +1,6 @@
 package com.solvek.gardenmonitor.bl
 
+import android.util.Log
 import com.solvek.gardenmonitor.Config
 import com.solvek.gardenmonitor.bl.db.Point
 import kotlin.math.abs
@@ -56,13 +57,21 @@ class TemperatureCalibrator {
         k = (y2-y1)/(x2-x1)
         b = y1 - k*x1
 
-        paramB = ((atanh((b-M1)/N1))/G1+128).roundToInt()
-        paramK = ((atanh((log(k, 2.0) -M2)/N2))/G2+128).roundToInt()
+        try {
+            paramB = ((atanh((b - M1) / N1)) / G1 + 128).roundToInt()
+            paramK = ((atanh((log(k, 2.0) - M2) / N2)) / G2 + 128).roundToInt()
+        }
+        catch (th: Throwable){
+            Log.e(TAG, "Couldn't calculate paramB and/or parmaK", th)
+            success = false
+        }
 
         success = true
     }
 
     companion object {
+        private const val TAG = "Calibrator"
+
         private const val G1 = 1.0/256
         private const val P1 = -10
         private const val Q1 = 10

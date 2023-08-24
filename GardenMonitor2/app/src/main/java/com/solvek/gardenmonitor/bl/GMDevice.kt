@@ -39,6 +39,14 @@ class GMDevice(private val peripheral: Peripheral
      * paramB and paramK should be both between 0 and 255
      */
     suspend fun writeTemperatureCalibrationParameters(paramB: Int, paramK: Int){
+        if (paramB < 0 || paramB >255){
+            Log.e(TAG, "paramB should be a byte. Its value is $paramB")
+            return
+        }
+        if (paramK < 0 || paramK >255){
+            Log.e(TAG, "paramK should be a byte. Its value is $paramK")
+            return
+        }
         writeToDevice("#C${paramB.pad}${paramK.pad}")
     }
 
@@ -48,7 +56,7 @@ class GMDevice(private val peripheral: Peripheral
         val job = coroutineScope {
             launch {
                 sensorTemperature.collect { st ->
-                    Log.d("ST", "Sensor temperature: $st")
+                    Log.d(TAG, "Sensor temperature: $st")
                     res = st
                     cancel()
                 }
@@ -67,7 +75,7 @@ class GMDevice(private val peripheral: Peripheral
         for (i in 1 until tmp.size + 1) {
             tx[i] = tmp[i - 1]
         }
-        Log.d("GMDevice", "Writing such data to device: $t")
+        Log.d(TAG, "Writing such data to device: $t")
         peripheral.write(CH_TX, tx)
     }
 
@@ -75,6 +83,8 @@ class GMDevice(private val peripheral: Peripheral
         get() = this.toString().padStart(3, '0')
 
     companion object {
+        private const val TAG = "GMDevice"
+
         @Suppress("SpellCheckingInspection")
         private val TIME_FORMAT = SimpleDateFormat("yyMMdduuHHmmss", Locale.US)
 
