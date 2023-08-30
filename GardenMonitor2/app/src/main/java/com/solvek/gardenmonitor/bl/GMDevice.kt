@@ -1,6 +1,5 @@
 package com.solvek.gardenmonitor.bl
 
-import android.util.Log
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
 import kotlinx.coroutines.cancel
@@ -8,6 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -40,11 +40,11 @@ class GMDevice(private val peripheral: Peripheral
      */
     suspend fun writeTemperatureCalibrationParameters(paramB: Int, paramK: Int){
         if (paramB < 0 || paramB >255){
-            Log.e(TAG, "paramB should be a byte. Its value is $paramB")
+            Timber.tag(TAG).e("paramB should be a byte. Its value is $paramB")
             return
         }
         if (paramK < 0 || paramK >255){
-            Log.e(TAG, "paramK should be a byte. Its value is $paramK")
+            Timber.tag(TAG).e("paramK should be a byte. Its value is $paramK")
             return
         }
         writeToDevice("#C${paramB.pad}${paramK.pad}")
@@ -56,7 +56,7 @@ class GMDevice(private val peripheral: Peripheral
         val job = coroutineScope {
             launch {
                 sensorTemperature.collect { st ->
-                    Log.d(TAG, "Sensor temperature: $st")
+                    Timber.tag(TAG).d("Sensor temperature: $st")
                     res = st
                     cancel()
                 }
@@ -75,7 +75,7 @@ class GMDevice(private val peripheral: Peripheral
         for (i in 1 until tmp.size + 1) {
             tx[i] = tmp[i - 1]
         }
-        Log.d(TAG, "Writing such data to device: $t")
+        Timber.tag(TAG).d("Writing such data to device: $t")
         peripheral.write(CH_TX, tx)
     }
 
