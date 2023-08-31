@@ -62,6 +62,12 @@ class TemperatureCalibrator {
             } else {
                 (atanh(arg) / G1 + 128).roundToInt()
             }
+            if (paramB < 0){
+                paramB = 0
+            }
+            if (paramB > 255){
+                paramB = 255
+            }
             paramK = 128 //((atanh((log(k, 2.0) - M2) / N2)) / G2 + 128).roundToInt()
         }
         catch (th: Throwable){
