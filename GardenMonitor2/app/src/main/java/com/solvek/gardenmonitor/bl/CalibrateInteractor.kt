@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.juul.kable.peripheral
 import com.solvek.gardenmonitor.Config
-import com.solvek.gardenmonitor.bl.db.AppDatabase
-import com.solvek.gardenmonitor.bl.db.Point
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,8 +17,8 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 
     private val gmDevice = GMDevice(peripheral)
     private val accuWeatherDataSource = AccuWeatherDataSource()
-    private val dbRepository = AppDatabase.create(context).getCalibrationDao()
-    private val calibrator = TemperatureCalibrator()
+    private val localDataStore = LocalDataStore(context)
+    private val calibrator = TemperatureCalibrator(localDataStore.readB(), localDataStore.readD())
 //    private val sheets = SheetsDataSource()
     private val dataset = FirestoreDataSource(context)
 
@@ -40,7 +38,6 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 log("Reading temperature from web")
                 accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID)
             }
-            val currentPointsD = async {dbRepository.getAllPoints()}
 
             val sensorTemperature = gmDevice.readSensorTemperature()
             gmDevice.sensorTemperature.first()
@@ -50,15 +47,12 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             val realTemperature = realTemperatureD.await()
             log("Real temperature: $realTemperature")
 
-            val newPoint = Point(
-                sensorTemperature = sensorTemperature,
-                realTemperature = realTemperature
-            )
-
 //            val appendDataset = launch(Dispatchers.IO) {
 //                log("Uploading record to google sheet")
 //                sheets.upload(newPoint)
 //            }
+            val newPoint = Point(sensorTemperature, realTemperature)
+
             val appendDataset = launch(Dispatchers.IO) {
                 log("Uploading record to dataset")
                 dataset.upload(newPoint)
@@ -66,21 +60,16 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 //                log("Point added to dataset: $ref")
             }
 
-            val updateDbJob = launch {
-                dbRepository.cleanOldPoints(calibrator.timeToTrim)
-                dbRepository.appendPoint(newPoint)
-                log("Local db updated")
-            }
-
             log("Calibrating time")
             gmDevice.writeTime(System.currentTimeMillis())
 
-            val calibrationResult = calibrator.calibrate(currentPointsD.await(), newPoint)
+            val calibrationResult = calibrator.calibrate(newPoint)
 
             if (calibrationResult == TemperatureCalibrator.Result.SUCCESS)
                 with(calibrator) {
-                    log("Temperature calibration parameters: x1=$x1, y1=$y1, x2=$x2, y2=$y2, k=$k, b=$b, paramK=$paramK, paramB=$paramB")
-                    gmDevice.writeTemperatureCalibrationParameters(paramB, paramK)
+                    localDataStore.store(calibrator.b, calibrator.d)
+                    log("Temperature calibration parameters: d=$d, b=$b, paramD=$paramD, paramB=$paramB")
+                    gmDevice.writeTemperatureCalibrationParameters(paramB, paramD)
                 }
             else {
                log("Temperature calibration failed: $calibrationResult")
@@ -89,7 +78,6 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
             log("Disconnecting")
             peripheral.disconnect()
 
-            updateDbJob.join()
             appendDataset.join()
             log("All done")
         }.join()

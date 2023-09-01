@@ -19,7 +19,7 @@ class GMDevice(private val peripheral: Peripheral
             val t = String(it)
             if (t.startsWith("#K")){
                 try {
-                    Integer.parseInt(t.substring(2, 6)) / 10.0
+                    Integer.parseInt(t.substring(2, 6)) / 10.0f
                 }
                 catch(e: NumberFormatException){
                     null
@@ -50,8 +50,8 @@ class GMDevice(private val peripheral: Peripheral
         writeToDevice("#C${paramB.pad}${paramK.pad}")
     }
 
-    suspend fun readSensorTemperature(): Double {
-        var res: Double = -1.0
+    suspend fun readSensorTemperature(): Float {
+        var res: Float = -1.0f
 
         val job = coroutineScope {
             launch {

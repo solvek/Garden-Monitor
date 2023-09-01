@@ -61,8 +61,7 @@ android {
 }
 
 dependencies {
-    val kable_version = "0.26.0"
-    val room_version = "2.6.0-alpha03"
+    val kableVersion = "0.26.0"
 
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -73,16 +72,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    implementation("com.juul.kable:core:$kable_version")
-
-    // Room
-    implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
+    implementation("com.juul.kable:core:$kableVersion")
 
     // Google Sheets
-    implementation("com.google.android.gms:play-services-auth:20.6.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.api-client:google-api-client-android:1.23.0") {
         exclude(group="org.apache.httpcomponents")
         exclude(module="guava-jdk5")

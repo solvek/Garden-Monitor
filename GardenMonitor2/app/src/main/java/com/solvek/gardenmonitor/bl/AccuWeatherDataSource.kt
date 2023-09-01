@@ -14,5 +14,6 @@ class AccuWeatherDataSource {
             .getJSONObject("Temperature")
             .getJSONObject("Metric")
             .getDouble("Value")
+            .toFloat()
     }
 }
