@@ -40,23 +40,6 @@ DS3231 Clock;
 #define ADDR_BRIGHTNESS 116
 #define ADDR_T_CORR 120
 
-#include <math.h>
-double v = tanh(23.535);
-
-#define G1 (1.0/256)
-#define P1 (-100)
-#define Q1 100
-double t1 = tanh(127*G1);
-double n1 = (Q1-P1)/(t1 - tanh(-128*G1));
-double m1 = Q1 - n1*t1;
-
-#define G2 (1.0/256)
-#define P2 -1
-#define Q2 1
-double t2 = tanh(127*G2);
-double n2 = (Q2-P2)/(t2 - tanh(-128*G2));
-double m2 = Q2 - n2*t2;
-
 double correl_b, correl_k;
 
 #include "Config.h"
@@ -72,12 +55,14 @@ long state_time;
 long m, recentM = -100000;
 byte tick;
 
+
 void setup()
 {  
   // Enable serial debug
   Serial.begin(57600);
   
   Serial.println(F("Started device"));
+
   dmd.setBrightness(EEPROM.read(ADDR_BRIGHTNESS));
   dmd.selectFont(GMSolvek); // Font used
   dmd.begin();     // Start DMD 
@@ -98,8 +83,8 @@ void setup()
   Wire.begin();
 
   byte paramB = EEPROM.read(ADDR_T_CORR),
-    paramK = EEPROM.read(ADDR_T_CORR+1);
-  setCorrelation(paramB, paramK);
+    paramD = EEPROM.read(ADDR_T_CORR+1);
+  setCorrelation(paramB, paramD);
 }
 
 int c;
@@ -312,10 +297,10 @@ void commandSetBrightness(){
 
 void commandCorrelation(){
   byte paramB = readNumeral(3),
-    paramK = readNumeral(3);
+    paramD = readNumeral(3);
   EEPROM.write(ADDR_T_CORR, paramB);
-  EEPROM.write(ADDR_T_CORR+1, paramK);
-  setCorrelation(paramB, paramK);
+  EEPROM.write(ADDR_T_CORR+1, paramD);
+  setCorrelation(paramB, paramD);
 }
 
 void changeBrightness(byte b){
@@ -350,23 +335,46 @@ int inputSymbol(){
   return s;
 }
 
-void setCorrelation(byte paramB, byte paramK){
-  correl_b = m1 + n1*tanh(G1*(paramB-128));
-  correl_k = pow(2, m2 + n2*tanh(G2*(paramK-128)));
+float M=50;
+float G = -M/atanh(-128.0/129);
+
+void setCorrelation(byte paramB, byte paramD){
+  correl_b = unpack(paramB);
+  correl_k = (20+unpack(paramD)-correl_b)/20.0;
 
   Serial.println(F("Correlation setup"));
-  Serial.print(F("m1: "));
-  Serial.println(m1);
-  Serial.print(F("n1: "));
-  Serial.println(n1);  
-  Serial.print(F("t1: "));
-  Serial.println(t1);
+  Serial.print(F("M: "));
+  Serial.println(M);
+  Serial.print(F("G: "));
+  Serial.println(G);  
   Serial.print(F("Param B: "));
   Serial.println(paramB);
-  Serial.print(F("Param K: "));
-  Serial.println(paramK);
+  Serial.print(F("Param D: "));
+  Serial.println(paramD);
   Serial.print(F("Correl B: "));
   Serial.println(correl_b);
   Serial.print(F("Correl K: "));
   Serial.println(correl_k);
+}
+
+float atanh(float x){
+  if (x < 0) return -atanh(-x);
+  
+  float r = x;
+  float px = x;
+  float d;
+  for(int i=0;i<1000;i++){
+    px = px*x*x;
+    d = px/(2*i+3);
+    r += d;
+    if (d < 0.00001){
+      break;
+    }
+  }
+
+  return r;
+}
+
+float unpack(int p){
+  return G*atanh((p-128)/129.0);
 }
