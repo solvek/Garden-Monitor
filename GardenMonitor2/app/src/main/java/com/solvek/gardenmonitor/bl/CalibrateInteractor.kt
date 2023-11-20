@@ -8,9 +8,11 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
 
 class CalibrateInteractor(private val context: Context, private val scope: CoroutineScope, private val logger: (String) -> Unit) {
     private val peripheral = scope.peripheral(Config.ADDRESS)
@@ -31,13 +33,21 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
         scope.launch(errorHandler) {
             log("Connecting")
             peripheral.connect()
-
             log("Connected")
+
+            val timeJob = launch {
+                log("Calibrating time")
+                delay(2.seconds)
+                gmDevice.writeTime(System.currentTimeMillis())
+                log("Time calibrated")
+            }
 
             val realTemperatureD = async {
                 log("Reading temperature from web")
                 accuWeatherDataSource.request(Config.AW_API_KEY, Config.AW_LOCATION_ID)
             }
+
+            timeJob.join()
 
             val sensorTemperature = gmDevice.readSensorTemperature()
             gmDevice.sensorTemperature.first()
@@ -59,9 +69,6 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
                 log("Point added to dataset")
 //                log("Point added to dataset: $ref")
             }
-
-            log("Calibrating time")
-            gmDevice.writeTime(System.currentTimeMillis())
 
             val calibrationResult = calibrator.calibrate(newPoint)
 
