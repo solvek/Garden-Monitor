@@ -49,8 +49,9 @@ class CalibrateInteractor(private val context: Context, private val scope: Corou
 
             timeJob.join()
 
-            val sensorTemperature = gmDevice.readSensorTemperature()
-            gmDevice.sensorTemperature.first()
+            log("Reading temperature from sensor")
+//            val sensorTemperature = gmDevice.readSensorTemperature()
+            val sensorTemperature = gmDevice.sensorTemperature.first()
     //        val sensorTemperature = 25.5
             log("Sensor temperature: $sensorTemperature")
 

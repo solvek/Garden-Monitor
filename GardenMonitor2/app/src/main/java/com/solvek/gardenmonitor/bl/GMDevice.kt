@@ -2,24 +2,22 @@ package com.solvek.gardenmonitor.bl
 
 import com.juul.kable.Peripheral
 import com.juul.kable.characteristicOf
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.min
 
 class GMDevice(private val peripheral: Peripheral
 ) : Peripheral by peripheral {
     val sensorTemperature = peripheral
         .observe(CH_RX)
-        .map {
-            val t = String(it)
+        .map { bytes ->
+            val t = String(bytes).dropLastWhile { !it.isDigit() }
             if (t.startsWith("#K")){
                 try {
-                    Integer.parseInt(t.substring(2, 6)) / 10.0f
+                    Integer.parseInt(t.substring(2, min(6, t.length))) / 10.0f
                 }
                 catch(e: NumberFormatException){
                     null
@@ -50,22 +48,22 @@ class GMDevice(private val peripheral: Peripheral
         writeToDevice("#C${paramB.pad}${paramK.pad}")
     }
 
-    suspend fun readSensorTemperature(): Float {
-        var res: Float = -1.0f
-
-        val job = coroutineScope {
-            launch {
-                sensorTemperature.collect { st ->
-                    Timber.tag(TAG).d("Sensor temperature: $st")
-                    res = st
-                    cancel()
-                }
-            }
-        }
-
-        job.join()
-        return res
-    }
+//    suspend fun readSensorTemperature(): Float {
+//        var res: Float = -1.0f
+//
+//        val job = coroutineScope {
+//            launch {
+//                sensorTemperature.collect { st ->
+//                    Timber.tag(TAG).d("Sensor temperature: $st")
+//                    res = st
+//                    cancel()
+//                }
+//            }
+//        }
+//
+//        job.join()
+//        return res
+//    }
 
     private suspend fun writeToDevice(t: String){
         val b: Byte = 0x00
@@ -91,5 +89,5 @@ class GMDevice(private val peripheral: Peripheral
         private const val SERVICE = "713d0000-503e-4c75-ba94-3148f18d941e"
         private val CH_TX = characteristicOf(SERVICE, "713d0003-503e-4c75-ba94-3148f18d941e")
         private val CH_RX = characteristicOf(SERVICE, "713d0002-503e-4c75-ba94-3148f18d941e")
-    }
+   }
 }
